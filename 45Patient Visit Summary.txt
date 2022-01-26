@@ -1,0 +1,57 @@
+<report title="Patient visit summary" description="Patient visit count summary for all patients for specified # of weeks" active="1">
+<!--Scott Gingras Jun23 2021 junoemr.com/pincher_creek-->
+<query>
+select CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,count(*) as '{gfr} weeks'
+
+
+from appointment a
+inner join demographic d on a.demographic_no = d.demographic_no
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+
+where a.appointment_date >= DATE_SUB(CURDATE(), INTERVAL {gfr} WEEK)
+and a.appointment_date < CURDATE()
+and a.reason NOT LIKE '%consult%'
+and a.reason NOT LIKE '%LPN%'
+and a.reason NOT LIKE '%surgical%'
+and a.reason NOT LIKE '%telehealth%'
+and a.reason NOT LIKE '%lesion%'
+and a.reason NOT LIKE '%botox%'
+and a.reason NOT LIKE '%Cancel Code:R%'
+and a.reason NOT LIKE '%no show%'
+and a.reason NOT LIKE '%pre-anesthetic%'
+and a.reason NOT LIKE '%pre- anesthetic%'
+and a.reason NOT LIKE '%cst%'
+and a.reason NOT LIKE '%esi%'
+and a.reason NOT LIKE '%accupuncture%'
+and a.reason NOT LIKE '%scope%'
+and a.reason NOT LIKE '%colon%'
+and a.reason NOT LIKE "%don't book%"
+and a.reason NOT LIKE '%telephone referral%'
+and a.reason NOT LIKE '%+FIT%'
+
+
+and a.notes NOT LIKE '%gastro%'
+and a.notes NOT LIKE '%colon%'
+and a.notes NOT LIKE '%consult%'
+and a.notes NOT LIKE '%+FIT%'
+and a.notes NOT LIKE '%positive fit%'
+and a.notes NOT LIKE '%pos fit%'
+and a.notes NOT LIKE '%botox%'
+and a.notes NOT LIKE '%surgical%'
+and a.notes NOT LIKE '%accupuncture%'
+and a.notes NOT LIKE '%cst%'
+and a.notes NOT LIKE '%esi%'
+and a.notes NOT LIKE '%scope%'
+and a.notes NOT LIKE '%pre-anesthetic%'
+and a.notes NOT LIKE '%pre- anesthetic%'
+
+and a.type <> 'ESI'
+and a.type NOT LIKE 'LPN Booking'
+and a.type NOT LIKE 'Surgical Booking'
+
+group by panel
+order by panel
+</query>
+<param id="gfr" type="text" description="# weeks to include in count"> </param>
+</report>

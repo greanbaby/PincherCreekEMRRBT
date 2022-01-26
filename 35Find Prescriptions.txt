@@ -1,0 +1,27 @@
+<report title="Find Prescriptions" description="List of patients who have ever been prescribed the specified medication." active="1">
+<query>
+
+SELECT de.demographic_no AS 'Demographic',
+dr.rx_date AS 'Rx Date',
+CONCAT(de.last_name, ', ', de.first_name) AS 'Patient',
+de.phone AS 'Phone',
+dr.end_date AS 'End Date',
+dr.archived,
+CASE
+	WHEN (dr.archived = 1) OR (CURDATE() > dr.end_date) THEN 'Inactive'
+	ELSE 'Active'
+END AS 'Status'
+
+FROM demographic de INNER JOIN drugs dr ON de.demographic_no = dr.demographic_no
+
+WHERE ((dr.BN LIKE '%{medication}%') OR (dr.customName LIKE '%{medication}%'))
+AND (dr.rx_date >= '{start}')
+
+ORDER BY de.last_name ASC, de.first_name ASC, dr.rx_date DESC;
+
+</query>
+
+<param id="medication" type="text" description="Medication to Find"> </param>
+<param id="start" type="date" description="Start date"> </param>
+
+</report>

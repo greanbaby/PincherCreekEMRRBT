@@ -1,0 +1,19 @@
+<report title="Preferred Pharmacies" description="This report will create a list of each patient and their preferred pharmacies" active="1">
+<query>
+
+SELECT de.demographic_no as "Demo",
+CONCAT(de.last_name, ', ', de.first_name) as "Patient Name",
+pi.name as "Pharmacy",
+pi.address as "Pharmacy Address",
+pi.fax as "Pharmacy Fax"
+
+FROM demographic de INNER JOIN demographicPharmacy dp ON de.demographic_no = dp.demographic_no
+	INNER JOIN pharmacyInfo pi ON dp.pharmacyID = pi.recordID
+
+WHERE dp.status = 1
+
+ORDER BY de.last_name ASC, de.first_name ASC
+
+</query>
+
+</report>

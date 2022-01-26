@@ -1,0 +1,47 @@
+<report title="Narcotic Rx by MED" description="Report of OSCAR screen activity by provider" active="1">
+<query>
+SELECT * FROM
+(SELECT d.`provider_no` as num , d.`demographic_no` as demo ,CONCAT(d.`first_name`,' ', d.`last_name`) as Name, 999 AS MED,  `rx_date`, `BN` ,`dosage` , `quantity`,`duration` , `durunit` 
+FROM `drugs` dr, `demographic` d
+WHERE d.`demographic_no` = dr.`demographic_no`
+AND d.provider_no = {provider_no}
+AND (
+GN LIKE 'MORPHINE%' OR GN LIKE 'HYDROMOR%' OR GN LIKE 'CODEINE%' OR GN LIKE 'OXYCON%'
+)
+AND `duration` = 0
+AND dr.`rx_date` > DATE_SUB( NOW( ) , INTERVAL 3 MONTH)
+UNION ALL
+SELECT d.`provider_no` as num , d.`demographic_no` as demo ,CONCAT(d.`first_name`,' ', d.`last_name`) as Name, ROUND( CAST( `dosage` AS UNSIGNED ) * `quantity` * IF( GN LIKE 'HYDROMOR%', 5, IF( GN LIKE 'CODEIN%', 0.152, IF( GN LIKE 'OXYCO', 1.52, 1 ) ) )  / ( `duration` * IF( `durunit` = "M", "30", "1" ) ) ) AS MED,  `rx_date`, `BN` ,`dosage` , `quantity`,`duration` , `durunit` 
+FROM `drugs` dr, `demographic` d
+WHERE d.`demographic_no` = dr.`demographic_no`
+AND d.provider_no = {provider_no}
+AND (
+GN LIKE 'MORPHINE%'
+OR GN LIKE 'HYDROMOR%'
+OR GN LIKE 'CODEINE%'
+OR GN LIKE 'OXYCON%'
+)
+AND `durunit`
+IN (
+"D", "M"
+)
+AND dr.`end_date` > CURDATE( )
+UNION ALL
+SELECT d.`provider_no` AS num, d.`demographic_no` AS demo, CONCAT( d.`first_name` , ' ', d.`last_name` ) AS Name, IF( CAST( `dosage` AS UNSIGNED ) =100, IF( `takemin` >1, `takemin`*200, 200 ) ,IF (CAST( `dosage` AS UNSIGNED )=50 ,IF( `takemin` >1,`takemin`*100,100), IF (CAST( `dosage` AS UNSIGNED )=25 ,IF( `takemin` >1,`takemin`*50,50), 1 ) ) ) AS MED, `rx_date` , `special` AS BN, `dosage` , `quantity` , `duration` , `durunit`
+FROM `drugs` dr, `demographic` d
+WHERE d.`demographic_no` = dr.`demographic_no`
+AND d.provider_no = {provider_no}
+AND GN LIKE 'FENTA%'
+AND dr.`rx_date` > DATE_SUB( NOW( ) , INTERVAL 3
+MONTH )) a
+ORDER BY MED DESC;
+</query>
+<param id="provider_no" type="list" description="Provider Number">
+<param-query>
+SELECT p.provider_no, CONCAT(last_name,', ',first_name,' (',p.provider_no,')') FROM provider p, security s
+WHERE p.provider_no=s.provider_no
+AND p.status='1'
+ORDER BY p.provider_no;
+</param-query>
+</param>
+</report>

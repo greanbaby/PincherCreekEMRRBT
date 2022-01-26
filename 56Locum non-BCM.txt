@@ -1,0 +1,59 @@
+<report title="Locum non-BCM" description="Locum Appointments List non-BCM" active="1">
+<!--Scott Gingras Aug19 2021 junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,DATE_FORMAT(a.appointment_date,'%b-%d-%Y') as 'appt' 
+,LEFT(a.name,16) as 'short name' 
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,LEFT(a.reason,31) as 'reason'  
+,a.status as 'o'
+,CONCAT( LEFT(pApp.last_name,7) , ', ', LEFT( pApp.first_name, 1) ) as 'attending' 
+,LEFT(a.notes,18) as 'notes'
+,a.type
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+, d.phone
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,d.hin as 'PHN'
+
+from (SELECT @row := 0) r
+,appointment a 
+inner join demographic d on a.demographic_no = d.demographic_no 
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+left join provider pApp ON a.provider_no = pApp.provider_no
+left join provider pUp ON a.lastupdateuser = pUp.provider_no
+
+where a.appointment_date >= '{sdate}'
+and a.appointment_date <= '{edate}' 
+AND a.provider_no LIKE {provider_no}
+and a.status <> 'NS'
+and a.status <> 'N'
+and a.status <> 'C'
+
+and 
+ (LEFT(pApp.last_name,6)='Bailey' 
+ or LEFT(pApp.last_name,6)='Shamsi'
+)
+
+
+order by 
+a.appointment_date 
+,a.start_time 
+,a.end_time 
+,a.name
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+</report>

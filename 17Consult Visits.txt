@@ -1,0 +1,103 @@
+<report title="Consult visits" description="Contribution that is negated and not counted for continuity" active="1">
+<!--Scott Gingras Mar28 2021 junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,DATE_FORMAT(a.appointment_date,'%b-%d') as 'appt' 
+,LEFT(a.start_time,5) as 'start' 
+,CONCAT( LEFT(pApp.last_name,7) , ', ', LEFT( pApp.first_name, 1) ) as 'attending' 
+,LEFT(a.reason,37) as 'reason' 
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,LEFT(a.notes,27) as 'notes' 
+,a.status as 'o.'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link' 
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel' 
+,d.phone
+,d.hin as 'PHN'
+,LEFT(a.name,18) as 'short name'
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'  
+,(select doc.observationdate
+    from document doc
+
+    INNER JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+
+    where (UPPER(doc.doctype) = 'AFFILIATION FORM- SIGNED'
+      or 
+    (doc.doctype = 'N/A' AND UPPER(LEFT(doc.docdesc,23)) = 'AFFILIATION FORM SIGNED'))
+and ctl.module_id = d.demographic_no order by doc.observationdate DESC limit 1
+) as 'affiliated'
+,CONCAT( LEFT(pUp.last_name,7) , ', ', LEFT( pUp.first_name, 1) ) as 'touched' 
+
+from (SELECT @row := 0) r
+,appointment a 
+inner join demographic d on a.demographic_no = d.demographic_no 
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+left join provider pApp ON a.provider_no = pApp.provider_no
+left join provider pUp ON a.lastupdateuser = pUp.provider_no
+
+where a.appointment_date >= '{sdate}'
+and a.appointment_date <= '{edate}'
+
+and d.provider_no <> a.provider_no
+and LEFT(proPanel.last_name,1)<>'Z'
+and LEFT(pApp.last_name,1)<>'Y'
+and LEFT(pApp.last_name,5)<>'Dolan'
+and LEFT(pApp.last_name,5)<>'Lewis'
+and LEFT(pApp.last_name,5)<>'Craig'
+and LEFT(pApp.last_name,3)<>'Gin'
+and LEFT(pApp.last_name,6)<>'Gerber'
+and LEFT(pApp.last_name,6)<>'Weathe'
+and LEFT(pApp.last_name,6)<>'Mitche'
+and LEFT(pApp.last_name,6)<>'Bailey'
+
+and
+(a.reason LIKE '%consult%'
+or a.reason LIKE '%LPN%'
+or a.reason LIKE '%surgical%'
+or a.reason LIKE '%telehealth%'
+or a.reason LIKE '%lesion%'
+or a.reason LIKE '%botox%'
+or a.reason LIKE '%telephone referral%'
+or a.reason LIKE '%pre-anesthetic%'
+or a.reason LIKE '%pre- anesthetic%'
+or a.reason LIKE '%cst%'
+or a.reason LIKE '%esi%'
+or a.reason LIKE '%accupuncture%'
+or a.reason LIKE '%scope%'
+or a.reason LIKE '%colon%'
+
+or a.reason LIKE '%telephone referral%'
+or a.reason LIKE '%+FIT%'
+
+or a.notes LIKE '%gastro%'
+or a.notes LIKE '%colon%'
+or a.notes LIKE '%consult%'
+or a.notes LIKE '%+FIT%'
+or a.notes LIKE '%positive fit%'
+or a.notes LIKE '%pos fit%'
+or a.notes LIKE '%botox%'
+or a.notes LIKE '%surgical%'
+or a.notes LIKE '%accupuncture%'
+or a.notes LIKE '%cst%'
+or a.notes LIKE '%esi%'
+or a.notes LIKE '%scope%'
+or a.notes LIKE '%pre-anesthetic%'
+or a.notes LIKE '%pre- anesthetic%'
+
+or a.type = 'CST'
+or a.type = 'ESI'
+or a.type LIKE 'LPN Booking'
+or a.type LIKE 'Surgical Booking')
+
+and a.reason NOT LIKE '%Cancel Code:R%'
+
+order by a.appointment_date 
+,a.start_time 
+,a.end_time 
+,a.name
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

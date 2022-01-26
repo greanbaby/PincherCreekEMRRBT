@@ -1,0 +1,55 @@
+<report title="Non-Panel visits" description="Non-Panel patient visits" active="1">
+<!--Scott Gingras Jun23 2021 junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,DATE_FORMAT(a.appointment_date,'%b-%d') as 'appt' 
+,LEFT(a.start_time,5) as 'start' 
+,LEFT(a.name,16) as 'short name' 
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,LEFT(a.reason,31) as 'reason'  
+,CONCAT( LEFT(pApp.last_name,7) , ', ', LEFT( pApp.first_name, 1) ) as 'attending' 
+,LEFT(a.notes,18) as 'notes'
+,a.status as 'o'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,d.hin as 'PHN'
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'  
+
+from (SELECT @row := 0) r
+,appointment a 
+inner join demographic d on a.demographic_no = d.demographic_no 
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+left join provider pApp ON a.provider_no = pApp.provider_no
+left join provider pUp ON a.lastupdateuser = pUp.provider_no
+
+where a.appointment_date >= '{sdate}'
+and a.appointment_date <= '{edate}' 
+
+and (d.provider_no NOT IN (1001,10016,1002,1004,1005,1006,1007,1008) or d.provider_no IS NULL)
+
+and a.reason NOT LIKE '%consult%'
+and a.reason NOT LIKE '%LPN%'
+and a.reason NOT LIKE '%surgical%'
+and a.reason NOT LIKE '%telehealth%'
+and a.reason NOT LIKE '%lesion%'
+and a.reason NOT LIKE '%botox%'
+and a.reason NOT LIKE'%cst%'
+and a.reason NOT LIKE '%colon%'
+and a.reason NOT LIKE '%esi%'
+
+and a.status <> 'NS'
+and a.status <> 'N'
+and a.status <> 'j'
+
+order by 
+a.appointment_date 
+,a.start_time 
+,a.end_time 
+,a.name
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

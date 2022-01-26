@@ -1,0 +1,52 @@
+<report title="Pts on warfarin" description="Lists patients on warfarin found by the Custom Name field" active="1">
+    <!--Scott Gingras March 23 2021 junoemr.com/Pincher_Creek-->
+    <query>
+        SELECT DISTINCT
+            CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link',
+            CONCAT( d.last_name , ', ', d.first_name ) AS 'patient name',
+            d.hin as 'PHN',
+            d.phone,
+            CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) AS 'panel',
+            CONCAT(d.year_of_birth, '-', d.month_of_birth, '-',d.date_of_birth, '  ') AS 'date of birth',
+            -- When calculating age or differences between dates, TIMESTAMPDIFF is your friend
+            TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS "age",
+            d.sex,
+            -- This was previously an inlined subquery here
+            -- Better to do all of your JOINs up front then query from there
+            future_appts.next_appointment AS "Next Appt",
+            LEFT(dr.customName, 47) as 'Custom Name',
+            dr.rx_date,
+            dr.end_date
+        FROM demographic d
+        INNER JOIN drugs dr on d.demographic_no = dr.demographic_no
+        INNER JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+        -- This was rewritten so that we could JOIN against it
+        -- If you do an INNER JOIN, it eliminates demographics that don't have an upcoming appointment
+        -- but greatly speeds things up by about 6x
+        LEFT JOIN
+        (
+            SELECT a.demographic_no, MIN(a.appointment_date) AS "next_appointment"
+            FROM appointment a
+            WHERE a.status NOT LIKE 'C%'
+            AND a.status NOT LIKE 'X%'
+            AND a.appointment_date > NOW()
+            GROUP BY a.demographic_no
+        ) future_appts ON future_appts.demographic_no=d.demographic_no
+        -- This used to be doing a LIKE search on three possible variants of customName
+        -- This is where a decent chunk of time of the query will be eaten up
+        -- Since there were only three options here, we've moved this to be an option to pick on runtime
+        -- Pick which custom name you want to look for, and the query will spit out what patients match
+        WHERE dr.customName LIKE "%{customName}%"
+        AND dr.end_date > DATE_SUB(CURDATE(), INTERVAL 40 DAY)
+        ORDER BY d.last_name, d.first_name, dr.end_date;
+    </query>
+
+    <!-- If you need to add additional custom drug names, put them in as new `choice` entries here -->
+    <!-- The choice's id is what gets input into the query as customName -->
+    <!-- The bit between the `choice` tags shows up as the dropdown option -->
+    <param id="customName" type="list" description="Custom Warfarin drug name">
+        <choice id="warf">warfarin</choice>
+        <choice id="Acenocoumarol">Acenocoumarol</choice>
+        <choice id="sintrom">sintrom</choice>
+    </param>
+</report>

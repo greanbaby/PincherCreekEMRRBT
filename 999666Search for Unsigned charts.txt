@@ -1,0 +1,8 @@
+<report title="Search for Unsigned charts" description="First 100 charts that are unsigned " active="1">
+<query>
+SELECT LEFT(casemgmt_note.note,100) AS "First 100 chars of note", casemgmt_note.demographic_no,demographic.last_name,demographic.first_name, CONCAT(provider.last_name,",",provider.first_name) AS "Provider",SUM(SIGNED) AS cnt,
+CONCAT( "<a  target='_blank' href=../../oscarEncounter/IncomingEncounter.do?demographicNo=", demographic.demographic_no, "&providerNo=",demographic.provider_no,">", "eChart", "<a/>" ) AS "eChart"
+ FROM casemgmt_note LEFT JOIN demographic ON casemgmt_note.demographic_no = demographic.demographic_no LEFT JOIN provider ON casemgmt_note.provider_no = provider.provider_no GROUP BY casemgmt_note.uuid HAVING cnt = 0 ORDER BY casemgmt_note.provider_no;
+ 
+</query> 
+</report>

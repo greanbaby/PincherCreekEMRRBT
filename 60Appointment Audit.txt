@@ -1,0 +1,30 @@
+<report title="Appointment Audit" description="This report will provide the update history on the appointment specified. The appointment number must be provided for this report to produce any results. The appointment number can be found by editing an appointment and looking at the web address of the appointment window. The appointment number will be indicated in the web address where is shows appointment_no=number." active="1">
+<query>
+
+(SELECT CONCAT(ap.creator, '  ') AS 'Creator  ',
+	ap.createdatetime AS 'Create Date/Time  ',
+	CONCAT(pr.last_name, ', ', pr.first_name) AS 'Last Update User  ',
+	ap.updatedatetime AS 'Updatetime',
+	CONCAT('  ', ap.reason) AS '  Reason  ',
+	ap.notes AS 'Note  '
+FROM appointment ap LEFT JOIN provider pr ON ap.lastupdateuser = pr.provider_no
+WHERE ap.appointment_no = '{appointment_no}')
+
+UNION
+
+(SELECT aa.creator,
+	aa.createdatetime,
+	CONCAT(pr.last_name, ', ', pr.first_name) AS 'Last Update User',
+	aa.updatedatetime,
+	CONCAT('  ', aa.reason),
+	aa.notes
+FROM appointment ap INNER JOIN appointmentArchive aa ON ap.appointment_no = aa.appointment_no
+	LEFT JOIN provider pr ON aa.lastupdateuser = pr.provider_no
+WHERE ap.appointment_no = '{appointment_no}')
+ORDER BY Updatetime DESC;
+
+</query>
+
+<param id="appointment_no" type="text" description="Appointment Number"> </param>
+
+</report>

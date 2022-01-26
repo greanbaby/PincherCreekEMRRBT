@@ -1,0 +1,8 @@
+<report title="Panel Sizes" description="Panel sizes" active="1">
+
+<query>
+select d.provider_no, CONCAT( LEFT(p.last_name,7) , ', ', LEFT( p.first_name, 1) ) as 'panel', count(*) as 'cnt' from demographic d inner join provider p on d.provider_no = p.provider_no where patient_status = 'AC' and d.provider_no NOT IN ('125','10000','10052','10003','10160','10233', '10282') group by provider_no, CONCAT( LEFT(p.last_name,7) , ', ', LEFT( p.first_name, 1) ) order by count(*) desc
+</query>
+
+
+</report>

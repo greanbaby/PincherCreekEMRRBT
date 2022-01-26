@@ -1,0 +1,90 @@
+<report title="Diabetic Registry" description="Diabetic Registry list of codes '250' or '2500'" active="1">
+<!--Scott Gingras Jun22 2021 www.junoemr.com/pincher_creek-->
+<query>
+select CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,d.hin as 'PHN'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,(select MAX(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%'
+and a.reason NOT LIKE '%consult%'
+and a.reason NOT LIKE '%LPN%'
+and a.reason NOT LIKE '%surgical%'
+and a.reason NOT LIKE '%telehealth%'
+and a.reason NOT LIKE '%lesion%'
+and a.reason NOT LIKE '%botox%'
+and a.reason NOT LIKE '%Cancel Code:R%'
+and a.reason NOT LIKE '%no show%'
+and a.reason NOT LIKE '%pre-anesthetic%'
+and a.reason NOT LIKE '%pre- anesthetic%'
+and a.reason NOT LIKE '%cst%'
+and a.reason NOT LIKE '%esi%'
+and a.reason NOT LIKE '%accupuncture%'
+and a.reason NOT LIKE '%scope%'
+and a.reason NOT LIKE '%colon%'
+and a.reason NOT LIKE "%don't book%"
+and a.reason NOT LIKE '%telephone referral%'
+and a.reason NOT LIKE '%+FIT%'
+
+
+and a.notes NOT LIKE '%gastro%'
+and a.notes NOT LIKE '%colon%'
+and a.notes NOT LIKE '%consult%'
+and a.notes NOT LIKE '%+FIT%'
+and a.notes NOT LIKE '%positive fit%'
+and a.notes NOT LIKE '%pos fit%'
+and a.notes NOT LIKE '%botox%'
+and a.notes NOT LIKE '%surgical%'
+and a.notes NOT LIKE '%accupuncture%'
+and a.notes NOT LIKE '%cst%'
+and a.notes NOT LIKE '%esi%'
+and a.notes NOT LIKE '%scope%'
+and a.notes NOT LIKE '%pre-anesthetic%'
+and a.notes NOT LIKE '%pre- anesthetic%'
+
+and a.type <> 'ESI'
+and a.type NOT LIKE 'LPN Booking'
+and a.type NOT LIKE 'Surgical Booking'
+
+AND a.appointment_date<NOW()) as 'last seen'
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+,(select doc.observationdate
+    from document doc
+
+    INNER JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+
+    where (UPPER(doc.doctype) = 'AFFILIATION FORM- SIGNED'
+      or 
+    (doc.doctype = 'N/A' AND UPPER(LEFT(doc.docdesc,23)) = 'AFFILIATION FORM SIGNED'))
+and ctl.module_id = d.demographic_no order by doc.observationdate DESC limit 1
+) as 'affiliated'
+,d.city
+
+from demographic d
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where d.provider_no LIKE {provider_no} 
+and d.provider_no NOT IN ('10000', '10160', '10003', '10052')
+and d.patient_status = 'AC' 
+and d.demographic_no IN (
+    select distinct dx.demographic_no 
+	from dxresearch dx 
+	where dx.dxresearch_code = '250' 
+	    or 
+    dx.dxresearch_code = '2500'
+	)
+order by d.last_name, d.first_name
+</query>
+
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+
+</report>

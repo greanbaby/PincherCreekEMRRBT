@@ -1,0 +1,35 @@
+<report title="Pharmacy Information" description="Displays information about pharmacies known to your Juno EMR" active="1">
+    <query>
+        SELECT p.recordID as 'ID',
+        p.name AS 'Name',
+        p.address AS 'Address',
+        p.city AS 'City',
+        p.postalCode AS 'Postal Code',
+        p.phone1 AS 'Phone 1',
+        p.fax AS 'Fax',
+        p.addDate AS 'Date Added',
+        p.status AS 'Active',
+        COUNT(dp.id) AS '# Patients'
+        FROM pharmacyInfo p
+        LEFT JOIN demographicPharmacy dp ON dp.pharmacyID = p.recordID AND dp.status = 1
+        WHERE
+        CHAR_LENGTH(TRIM('{name_search}')) = 0 OR p.name LIKE '%{name_search}%'
+        GROUP BY p.recordID
+        ORDER BY {order_by} {order_dir}
+    </query>
+    <param id="name_search" type="text" description="Pharmacy Name (Optional)" />
+    <param id="order_by" type="list" description="Order Results By">
+        <param-query>
+            (SELECT 'p.recordID', 'ID') UNION
+            (SELECT 'p.name', 'Name') UNION
+            (SELECT 'p.addDate', 'Date Added') UNION
+            (SELECT 'COUNT(dp.id)', 'Number of Patients Linked');
+        </param-query>
+    </param>
+    <param id="order_dir" type="list" description="Direction">
+        <param-query>
+            (SELECT 'ASC', 'Ascending') UNION
+            (SELECT 'DESC', 'Descending');
+        </param-query>
+    </param>
+</report>

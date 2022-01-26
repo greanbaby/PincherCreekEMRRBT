@@ -1,0 +1,29 @@
+<report title="Obese patients" description="Obese patients measured by BMI > 35" active="1">
+<!--Scott Gingras Jun28 2021 www.junoemr.com/pincher_creek-->
+<query>
+
+select distinct CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,d.hin as 'PHN'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,m.type 
+,m.dataField  
+,LEFT(m.comments,90) as 'comments' 
+,DATE_FORMAT(m.dateObserved,'%Y-%m-%d') as 'Observed' 
+,DATE_FORMAT(m.dateEntered,'%b-%d %H:%i') as 'Entered'
+
+from demographic d
+INNER JOIN measurements m on d.demographic_no = m.demographicNo
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+
+where m.type = 'BMI' 
+AND m.dateObserved >= DATE_ADD(NOW(), INTERVAL -2 YEAR)
+
+
+order by d.last_name, d.first_name
+
+</query>
+
+</report>

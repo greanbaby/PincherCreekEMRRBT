@@ -1,0 +1,19 @@
+<report title="eForm Used List" description="This will list all the patients who have a specified eform" active="1">
+<!--Scott Gingras Jul13 2021 junoemr.com/pincher_creek-->
+<query>
+    select e.form_date, e.form_time, e.subject, e.demographic_no, d.last_name, d.first_name
+    from eform_data e
+   left join demographic d on e.demographic_no = d.demographic_no
+    where e.fid = '{eform_id}'
+    order by e.form_date
+</query>
+
+<param id="eform_id" type="list" description="eform">
+  <param-query>
+               select fid, form_name
+               from eform
+               order by form_name ;
+  </param-query>
+</param>
+
+</report>

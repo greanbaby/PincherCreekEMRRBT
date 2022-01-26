@@ -1,0 +1,12 @@
+<report title="eForm FID values" description="List of active eForms with FID value" active="1">
+<!--Scott Gingras Jul10 2021 www.junoemr.com/pincher_creek-->
+<query>
+SELECT
+                  fid,
+                  form_name
+          FROM eform
+          WHERE status= "1"
+          ORDER BY
+                  form_name ;
+</query>
+</report>

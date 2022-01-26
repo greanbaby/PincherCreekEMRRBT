@@ -1,0 +1,33 @@
+<report title="No Affiliation" description="No signed affiliation form found for these patients" active="1">
+<!--Scott Gingras Mar27 2021 www.junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,d.hin as 'PHN'
+,d.phone
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+,d.city
+
+from (SELECT @row := 0) r
+,demographic d
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where d.patient_status = 'AC'
+AND d.provider_no NOT IN ('10000', '10160', '10003', '10052')
+
+AND d.demographic_no NOT IN (
+    select distinct dem.demographic_no
+    from document doc
+    LEFT JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+    LEFT JOIN demographic dem ON ctl.module_id = dem.demographic_no
+    where UPPER(doc.doctype) = 'AFFILIATION FORM- SIGNED'
+      or 
+    (doc.doctype = 'N/A' AND UPPER(LEFT(doc.docdesc,23)) = 'AFFILIATION FORM SIGNED')
+)
+
+order by d.last_name, d.first_name;
+</query>
+</report>

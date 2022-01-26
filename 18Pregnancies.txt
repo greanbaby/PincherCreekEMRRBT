@@ -1,0 +1,24 @@
+<report title="Pregnancies" description="Pregnancy future episodes" active="1">
+<!--Scott Gingras Mar28 2020 junoemr.com/pincher_creek-->
+<query>
+select distinct e.startDate as 'date'
+,LEFT(e.notes,11) as 'notes'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",dem.demographic_no,"&displaymode=edit&dboperation=search_detail/>",'*link*',"<a/>" ) AS 'link'
+,CONCAT(dem.last_name, ', ',dem.first_name) as 'patient'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(dem.year_of_birth, '-', dem.month_of_birth, '-', dem.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,(select CONCAT(LEFT(prov.last_name,7), ', ', LEFT(prov.first_name,1)) from provider prov where prov.provider_no = dem.provider_no) as 'panel'
+,dem.phone
+,dem.hin
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=dem.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+,dem.city
+
+from Episode e
+INNER JOIN demographic dem ON e.demographicNo = dem.demographic_no
+LEFT JOIN provider proPanel ON dem.provider_no = proPanel.provider_no
+
+where startDate > DATE_SUB(CURDATE(), INTERVAL 8 DAY)
+and dem.hin <> ''
+
+order by e.startDate
+</query>
+</report>

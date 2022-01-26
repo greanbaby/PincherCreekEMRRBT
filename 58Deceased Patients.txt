@@ -1,0 +1,30 @@
+<report title="Deceased Patients" description="Deceased patients by status='DE' and patient status date is between the range specified" active="1">
+<!--Scott Gingras Sep3 2021 www.junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,d.hin as 'PHN'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,CONCAT(d.year_of_birth, '-', d.month_of_birth, '-',d.date_of_birth, '  ') as 'date of birth'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,(select MAX(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' and a.status NOT LIKE '%N%' AND a.appointment_date<NOW()) as 'last appt'
+,d.patient_status
+,d.patient_status_date
+
+from (SELECT @row := 0) r
+,demographic d
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+
+where (d.patient_status = 'DE' OR d.patient_status = 'DECEASED' OR d.provider_no = '10160')
+AND d.patient_status_date >= '{sdate}'
+and d.patient_status_date <= '{edate}'
+
+order by d.last_name, d.first_name
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

@@ -1,0 +1,15 @@
+<report title="Tickler Counts" description="10043=Reception 10085=Nurses" active="1">
+<!--Scott Gingras Mar31 2021 www.junoemr.com/pincher_creek-->
+<query>
+select t.task_assigned_to as 'assigned_to'
+,count(*) as 'cnt'
+
+from tickler t
+
+where status = 'A'
+and t.service_date < DATE_ADD(NOW(), INTERVAL +2 DAY)
+
+group by assigned_to
+with rollup
+</query>
+</report>

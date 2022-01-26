@@ -1,0 +1,46 @@
+<report title="Panel - by Age" description="Panel List for selected MD and age range specified" active="1">
+<!--Scott Gingras Jun10 2021 www.junoemr.com/pincher_creek-->
+<query>
+select * from (select CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,d.hin as 'PHN'
+,d.phone
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,CONCAT(d.year_of_birth, '-', d.month_of_birth, '-',d.date_of_birth, '  ') as 'date of birth'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+,(select doc.observationdate
+    from document doc
+
+    INNER JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+
+    where (UPPER(doc.doctype) = 'AFFILIATION FORM- SIGNED'
+      or 
+    (doc.doctype = 'N/A' AND UPPER(LEFT(doc.docdesc,23)) = 'AFFILIATION FORM SIGNED'))
+and ctl.module_id = d.demographic_no order by doc.observationdate DESC limit 1
+) as 'affiliated'
+,d.city
+
+from demographic d
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where d.provider_no LIKE {provider_no} 
+and d.patient_status = 'AC'
+AND d.provider_no NOT IN ('10000', '10160', '10003', '10052') ) t2
+WHERE t2.age >= {sage} AND t2.age <= {eage}
+ORDER BY `patient name`
+</query>
+
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+<param id="sage" type="text" description="Start Age" />
+<param id="eage" type="text" description="End Age" />
+</report>

@@ -1,0 +1,73 @@
+<report title="Narcotics" description="Search for morph, tramadol, hydromorph, tramacet, hydrocodone, oxy, Oliceridine, Tapentadol (Nucynta) Pentazocine (Talwin or Ts), Fentanyl (Nerps), Codeine (Cody), Meperidine (Demmies), Methadone (Doan), Buprenorphine (Bupe), Suboxone (Subby or Bupe) with end_date from 9 days ago or in the future" active="1">
+<!--Scott Gingras May20 2021 www.junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( LEFT(d.last_name,16) , ', ', LEFT(d.first_name,14) ) as 'patient name'
+,d.hin as 'PHN'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,dr.BN
+,dr.GN
+,dr.customName
+,dr.end_date
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+
+
+from (SELECT @row := 0) r
+,demographic d
+INNER JOIN drugs dr ON d.demographic_no = dr.demographic_no
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where d.provider_no LIKE {provider_no} 
+and d.patient_status = 'AC' 
+AND (
+dr.GN LIKE '%MORPHINE%'
+OR dr.GN LIKE '%HYDROMOR%'
+OR dr.GN LIKE '%HYDROCODONE%'
+OR dr.GN LIKE '%CODEINE%'
+OR dr.GN LIKE '%OXYCON%'
+OR dr.GN LIKE '%SUBOXONE%'
+OR dr.GN LIKE '%FENTANYL%'
+OR dr.GN LIKE '%tramadol%'
+OR dr.GN LIKE '%tramacet%'
+OR dr.GN LIKE '%Oliceridine%'
+OR dr.GN LIKE '%Meperidine%'
+OR dr.GN LIKE '%Buprenorphine%'
+OR dr.GN LIKE '%Methadone%'
+OR dr.GN LIKE '%Pentazocine%'
+OR dr.GN LIKE '%Tapentadol%'
+
+OR dr.customName LIKE '%MORPHINE%'
+OR dr.customName LIKE '%HYDROMOR%'
+OR dr.customName LIKE '%HYDROCODONE%'
+OR dr.customName LIKE '%CODEINE%'
+OR dr.customName LIKE '%OXYCON%'
+OR dr.customName LIKE '%SUBOXONE%'
+OR dr.customName LIKE '%FENTANYL%'
+OR dr.customName LIKE '%tramadol%'
+OR dr.customName LIKE '%tramacet%'
+OR dr.customName LIKE '%Oliceridine%'
+OR dr.customName LIKE '%Meperidine%'
+OR dr.customName LIKE '%Buprenorphine%'
+OR dr.customName LIKE '%Methadone%'
+OR dr.customName LIKE '%Pentazocine%'
+OR dr.customName LIKE '%Tapentadol%'
+)
+AND dr.end_date > CURDATE() + INTERVAL -9 DAY
+AND dr.archived < 1
+order by d.last_name, d.first_name
+</query>
+
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+
+</report>

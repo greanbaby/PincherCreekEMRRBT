@@ -1,0 +1,38 @@
+<report title="Preventions" description="BMD COLONOSCOPY FIT MAM PAP" active="1">
+<!--Scott Gingras Mar31 2021 www.junoemr.com/pincher_creek-->
+<query>
+select distinct CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( LEFT(d.last_name,12) , ', ', LEFT(d.first_name,14) ) as 'patient name'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,p.prevention_type as 'type'
+,p.next_date
+,(select CONCAT(LEFT(prov.last_name,14), ', ', LEFT(prov.first_name,1)) from provider prov where prov.provider_no = p.creator) as 'creator'
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+,LEFT(pe.val,100) as 'comments'
+
+from preventions p
+inner join demographic d on p.demographic_no = d.demographic_no
+left join provider proPanel on proPanel.provider_no = d.provider_no
+left join preventionsExt pe on p.id = pe.prevention_id
+
+where (prevention_type LIKE '%BMD%'
+or prevention_type LIKE '%pap%'
+or prevention_type LIKE '%mam%'
+or prevention_type LIKE '%colon%'
+or prevention_type LIKE '%fit%'
+or prevention_type LIKE '%fobt%')
+
+and p.next_date >= '{sdate}'
+and p.next_date <= '{edate}'
+
+and pe.keyval = 'comments'
+
+order by p.next_date
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

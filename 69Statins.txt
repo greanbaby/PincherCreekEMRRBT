@@ -1,0 +1,42 @@
+<report title="Statins" description="Search for statins with end_date from 9 days ago or in the future" active="1">
+<!--Scott Gingras Jan25 2022 www.junoemr.com/pincher_creek-->
+<query>
+select CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( LEFT(d.last_name,16) , ', ', LEFT(d.first_name,14) ) as 'patient name'
+,d.hin as 'PHN'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,dr.BN
+,dr.GN
+,dr.customName
+,dr.end_date
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+
+
+from demographic d
+INNER JOIN drugs dr ON d.demographic_no = dr.demographic_no
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where d.provider_no LIKE {provider_no} 
+and d.patient_status = 'AC' 
+AND (
+dr.GN LIKE '%statin%'
+OR dr.customName LIKE '%statin%'
+)
+AND dr.end_date > CURDATE() + INTERVAL -45 DAY
+AND dr.archived < 1
+order by d.last_name, d.first_name
+</query>
+
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+
+</report>

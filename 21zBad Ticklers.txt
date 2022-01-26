@@ -1,0 +1,23 @@
+<report title="zBad Ticklers" description="This RBT finds bad ticklers.<br><br>A bad tickler is:<br> - A tickler that has NO DUE DATE<br> - A tickler that has a DUE DATE OLDER THAN 6 months.<br> - A tickler that has NO MESSAGE.<br><br>* A link to the Patient Master File is in the first column.<br>* A link to EDIT the Tickler is in the last column.<br><br>" active="1">
+
+<query>
+
+SELECT
+CONCAT("<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=", demographic_no, "&displaymode=edit&dboperation=search_detail/>", demographic_no, "<a/>") AS 'DEMO_NO',
+message AS 'MESSAGE',
+update_date AS 'UPDATE_DATE',
+service_date AS 'TICKLER_DUE_DATE',
+provider.last_name AS 'TICKLER_CREATOR',
+task_assigned_to AS 'ASSIGNED_TO',
+tickler_no AS 'T_NO',
+CONCAT("<a target=new href=../../tickler/ticklerEdit.jsp?tickler_no=", tickler_no, ">Edit Tickler<a/>") AS 'MODIFY'
+
+FROM tickler,
+provider
+
+WHERE tickler.status = 'A' AND (service_date IS NULL OR service_date < (CURRENT_DATE - INTERVAL 6 MONTH) OR message = '') 
+AND provider.provider_no = tickler.creator;
+
+</query>
+
+</report>

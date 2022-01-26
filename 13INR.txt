@@ -1,0 +1,42 @@
+<report title="INR" description="INR Health Tracker entries" active="1">
+<!--Scott Gingras May9 2021 www.junoemr.com/pincher_creek-->
+<query>
+
+select distinct CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,d.hin as 'PHN'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,m.type 
+,m.dataField  
+,LEFT(m.comments,90) as 'comments' 
+,DATE_FORMAT(m.dateObserved,'%Y-%m-%d') as 'Observed' 
+,DATE_FORMAT(m.dateEntered,'%b-%d %H:%i') as 'Entered'
+
+from demographic d
+INNER JOIN measurements m on d.demographic_no = m.demographicNo
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+
+where m.type = 'INR' 
+AND m.dateObserved >= '{sdate}'
+AND m.dateObserved <= '{edate}'
+AND d.provider_no LIKE {provider_no}
+order by d.last_name, d.first_name
+
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+</report>

@@ -1,0 +1,29 @@
+<report title="Unable to contact" description="Search unable to contact documents" active="1">
+<!--Scott Gingras Jun25 2021 www.junoemr.com/pincher_creek
+<query>
+select dem.last_name as 'Pt LastName',
+dem.first_name as 'Pt FirstName',
+dem.hin,
+CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",dem.demographic_no,"&displaymode=edit&dboperation=search_detail/>",dem.demographic_no,"<a/>" ) AS 'Pt Link',
+DATE_FORMAT(doc.observationdate,'%Y-%b-%d') as 'observed',
+doc.doctype,
+LEFT(doc.docdesc,34) as 'docdesc',
+CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel',
+DATE_FORMAT(doc.updatedatetime,'%Y-%b-%d') as 'updated'
+
+from document doc
+LEFT JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+LEFT JOIN demographic dem ON ctl.module_id = dem.demographic_no
+LEFT JOIN provider pro ON doc.doccreator = pro.provider_no
+LEFT JOIN provider proPanel ON dem.provider_no = proPanel.provider_no
+
+where (doc.doctype = 'Unable to contact' OR doc.docdesc LIKE '%unable to contact%')
+and doc.observationdate >= '{sdate}'
+and doc.observationdate <= '{edate}'
+order by dem.last_name, dem.first_name, doc.observationdate DESC;
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

@@ -1,0 +1,64 @@
+<report title="Prenatal EDB List Report v3" description="List Prenatal Info about patients" active="1">
+
+<query>
+SELECT Q.demographic_no, Q.first_name, Q.last_name, Q.phn, Q.phone, Q.age, Q.us_date, Q.gravida, Q.term + Q.preterm AS prev, Q.provider, Q.referral_doctor
+FROM (
+SELECT ev.fdid, MAX(d.demographic_no) AS demographic_no, MAX(d.first_name) AS first_name, MAX(d.last_name) AS last_name, MAX(d.hin) AS phn, MAX(d.phone) AS phone,
+IF(
+	MAX(IF(ev.var_name='EDB_US_yyyy', ev.var_value, NULL)) > 0 AND
+	MAX(IF(ev.var_name='EDB_US_mm', ev.var_value, NULL)) > 0 AND
+	MAX(IF(ev.var_name='EDB_US_dd', ev.var_value, NULL)) > 0
+, CONCAT(
+	MAX(IF(ev.var_name='EDB_US_yyyy', ev.var_value, NULL)), '-',
+	MAX(IF(ev.var_name='EDB_US_mm', ev.var_value, NULL)), '-',
+	MAX(IF(ev.var_name='EDB_US_dd', ev.var_value, NULL))), '') AS us_date,
+MAX(IF(ev.var_name='GravidaInput', ev.var_value, NULL)) AS gravida,
+MAX(IF(ev.var_name='TermInput', ev.var_value, 0)) AS term,
+MAX(IF(ev.var_name='PretermInput', ev.var_value, 0)) AS preterm,
+
+TIMESTAMPDIFF(YEAR, CONCAT(MAX(d.year_of_birth), '-', MAX(d.month_of_birth), '-', MAX(d.date_of_birth)), CURDATE()) AS age, 
+CONCAT(MAX(p.last_name), ',', MAX(p.first_name)) AS provider, 
+Replace(Replace(Replace(Replace(Replace(Replace(Replace(Replace(Replace(Replace(
+Max(d.family_doctor),'9',''),'8',''),'7',''),'6',''),'5',''),'4',''),'3',''),'2',''),'1',''),'0','') as referral_doctor
+
+FROM demographic d
+JOIN provider p ON (p.provider_no = d.provider_no)
+JOIN eform_data ed ON (d.demographic_no = ed.demographic_no)
+JOIN eform_values ev ON (ed.fdid = ev.fdid)
+WHERE ev.var_name IN('EDB_US_yyyy', 'EDB_US_mm', 'EDB_US_dd', 'GravidaInput', 'TermInput', 'PretermInput')
+AND ev.fid = '17'
+AND ed.status=1
+AND p.provider_no='{provider}'
+GROUP BY ev.fdid, d.demographic_no
+HAVING IF(
+	MAX(IF(ev.var_name='EDB_US_yyyy', ev.var_value, NULL)) > 0 AND
+	MAX(IF(ev.var_name='EDB_US_mm', ev.var_value, NULL)) > 0 AND
+	MAX(IF(ev.var_name='EDB_US_dd', ev.var_value, NULL)) > 0
+, CONCAT(
+	MAX(IF(ev.var_name='EDB_US_yyyy', ev.var_value, NULL)), '-',
+	MAX(IF(ev.var_name='EDB_US_mm', ev.var_value, NULL)), '-',
+	MAX(IF(ev.var_name='EDB_US_dd', ev.var_value, NULL))), '') >= (DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
+OR IF(
+	MAX(IF(ev.var_name='EDB_US_yyyy', ev.var_value, NULL)) > 0 AND
+	MAX(IF(ev.var_name='EDB_US_mm', ev.var_value, NULL)) > 0 AND
+	MAX(IF(ev.var_name='EDB_US_dd', ev.var_value, NULL)) > 0
+, CONCAT(
+	MAX(IF(ev.var_name='EDB_US_yyyy', ev.var_value, NULL)), '-',
+	MAX(IF(ev.var_name='EDB_US_mm', ev.var_value, NULL)), '-',
+	MAX(IF(ev.var_name='EDB_US_dd', ev.var_value, NULL))), '') = ''
+
+ORDER BY ev.fdid
+) AS Q 
+INNER JOIN (SELECT MAX(ev.fdid) AS fdid_max, ev.demographic_no 
+FROM eform_values ev
+WHERE ev.fid = '17'
+GROUP BY demographic_no) AS X ON (X.demographic_no = Q.demographic_no) AND (X.fdid_max = Q.fdid)
+ORDER BY Q.last_name, Q.first_name, Q.demographic_no;
+
+</query>
+
+<param id="provider" type="list" description="Provider">
+<param-query> select distinct provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider WHERE status='1' ORDER BY last_name, first_name; </param-query>
+</param>
+
+</report>

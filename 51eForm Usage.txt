@@ -1,0 +1,60 @@
+<report title="eForm Usage" description="Lists the
+patients who have used a particular eForm" active="1">
+<query>
+SELECT
+     D.provider_no Provider,
+CONCAT( " " ,
+D.demographic_no, "
+<../../demographic/demographiccontrol.jsp?demographic_no=",>  " ) As "Dem#",
+CONCAT( " " ,
+ED.fdid, " <../../eform/efmshowform_data.jsp?fdid=",>  " ) As "fdid",
+     D.first_name FirstName,
+     D.last_name LastName,
+    
+(YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((D.year_of_birth),'-',(D.month_of_birth),'-',(D.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((D.year_of_birth),'-',(D.month_of_birth),'-',(D.date_of_birth)),'%Y-%m-%d'),5))
+Age,
+ED.form_date Date
+FROM
+     demographic D,
+     eform_values EV,
+     eform_data ED
+LEFT JOIN
+     eform_data M
+ON
+     M.demographic_no=ED.demographic_no AND
+     M.fid=ED.fid AND
+     M.fdid>ED.fdid
+WHERE
+     D.patient_status='{PatientStatus}' AND
+     ED.form_date>='{FromDate}' AND
+     ED.form_date<='{ToDate}' AND
+     M.fdid IS NULL AND
+     ED.demographic_no=D.demographic_no AND
+     ED.fid = '{eform_id}' AND
+     ED.status=1 AND
+     ED.fdid=EV.fdid AND
+     ED.fid=EV.fid
+GROUP BY
+     D.demographic_no
+ORDER BY
+     D.provider_no;
+
+</query>
+
+  <param-query> SELECT "AC", "Active" UNION ALL SELECT "IN", "Inactive"
+UNION ALL SELECT "DE", "Deceased";</param-query>
+
+  
+        <param-query>
+          SELECT
+                  fid,
+                  form_name
+          FROM eform
+          WHERE status= "1"
+          ORDER BY
+                  form_name ;
+        </param-query>
+  
+ 
+ 
+</report>

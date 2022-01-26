@@ -1,0 +1,67 @@
+<report title="Phlebotomies" description="Patients needing regular phlebotomies" active="1">
+<!--Scott Gingras Apr19 2021 www.junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link', 
+CONCAT( d.last_name , ', ', d.first_name ) as 'patient name',
+d.hin as 'PHN', d.phone,
+CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel',
+CONCAT(d.year_of_birth, '-', d.month_of_birth, '-',d.date_of_birth, '  ') as 'date of birth',
+(YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as 'age',d.sex,
+(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+
+from (SELECT @row := 0) r
+,demographic d
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where 
+
+d.hin in ('554630120',
+'944077620',
+'269193020',
+'926533610',
+'953832700',
+'312467020',
+'784818220',
+'678778010',
+'378708010',
+'954397870',
+'421140210',
+'218825200',
+'384643121',
+'346889900',
+'624038700',
+'594610320',
+'104744261',
+'589790620',
+'218238110',
+'442066120',
+'226095610',
+'505205010',
+'477087151',
+'197196710',
+'919258520',
+'720421810',
+'505560110',
+'605550110',
+'855492391',
+'275412391',
+'871953330',
+'960997600',
+'301660800',
+'714422620',
+'813874330',
+'290415700',
+'896439720',
+'643617510',
+'642883300',
+'882458831',
+'955728000',
+'577871400',
+'612096700',
+'848842520')
+ 
+order by d.last_name, d.first_name
+</query>
+
+</report>

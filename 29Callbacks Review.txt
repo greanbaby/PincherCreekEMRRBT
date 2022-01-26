@@ -1,0 +1,43 @@
+<report title="Callbacks Review" description="Callbacks Review created for Dr. Myhr May 12/21" active="1">
+<!--Scott Gingras May12 2021 www.junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT(LEFT(d.last_name,10),', ',LEFT(d.first_name,7)) as 'short name'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,(select CONCAT(LEFT(pr.last_name,7), ', ', LEFT(pr.first_name,1)) from provider pr where pr.provider_no = t.creator) as 'creator'
+,LEFT(t.message,85) as 'message'
+,DATE_FORMAT(t.update_date,'%b-%d %H:%i') as 'updated'
+,(select CONCAT(LEFT(prov.last_name,7), ', ', LEFT(prov.first_name,1)) from provider prov where prov.provider_no = t.task_assigned_to) as 'assigned to'
+,DATE_FORMAT(t.service_date,'%Y-%b-%d') as 'service date'
+
+from (SELECT @row := 0) r 
+,tickler t 
+INNER JOIN demographic d on t.demographic_no = d.demographic_no 
+
+where t.update_date >= '{sdate}'
+AND t.update_date <= '{edate}'
+AND t.message NOT LIKE '%please phone%'
+AND t.message NOT LIKE '%just a test%'
+AND t.message NOT LIKE '%admitted to lrh%'
+AND t.message NOT LIKE '%discharged from lrh%'
+AND t.message NOT LIKE '%linked to chart%'
+
+AND t.creator IN (10006,
+1001,
+10016,
+1002,
+1004,
+1005,
+1006,
+1007,
+1008,
+10265,
+10120)
+
+order by t.update_date DESC
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

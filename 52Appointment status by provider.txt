@@ -1,0 +1,35 @@
+<report title="Appointment status by provider" description="Appointments for specified dates" active="1">
+<!--Scott Gingras Jul13 2021 junoemr.com/pincher_creek-->
+<query>
+select CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+, a.status
+, COUNT(*)
+
+FROM appointment a 
+inner join demographic d on a.demographic_no = d.demographic_no 
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+
+where a.appointment_date >= '{sdate}'
+and a.appointment_date <= '{edate}' 
+AND a.provider_no LIKE {provider_no}
+GROUP BY CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) )
+, a.status
+ORDER BY CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) )
+, a.status
+
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+</report>

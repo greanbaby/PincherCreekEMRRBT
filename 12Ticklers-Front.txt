@@ -1,0 +1,26 @@
+<report title="Ticklers-Front" description="Ticklers active list for reception only" active="1">
+<!--Scott Gingras Mar27 2021 www.junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT(LEFT(d.last_name,10),', ',LEFT(d.first_name,7)) as 'patient'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,(select CONCAT(LEFT(pr.last_name,7), ', ', LEFT(pr.first_name,1)) from provider pr where pr.provider_no = t.creator) as 'creator'
+,LEFT(t.message,120) as 'message'
+,DATE_FORMAT(t.update_date,'%b-%d %H:%i') as 'updated'
+,DATE_FORMAT(t.service_date,'%Y-%b-%d') as 'service date'
+
+
+from (SELECT @row := 0) r 
+,tickler t 
+INNER JOIN demographic d on t.demographic_no = d.demographic_no 
+
+where status = 'A'
+and t.task_assigned_to = '10043'
+and t.service_date < DATE_ADD(NOW(), INTERVAL +2 DAY)
+
+order by t.update_date DESC
+
+</query>
+
+
+</report>

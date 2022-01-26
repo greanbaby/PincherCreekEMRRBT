@@ -1,0 +1,49 @@
+<report title="Appts - In Person ALL" description="Today or tomorrow in-person appointments based on the appointment status not being: Public Health; Hospital Procedure; Telephone Visit; Double Book Telephone Visit" active="1">
+<!--Scott Gingras Apr22 2021 junoemr.com/pincher_creek-->
+<query>
+select @row := @row + 1 as 'cnt'
+,CONCAT( LEFT(pApp.last_name,7) , ', ', LEFT( pApp.first_name, 1) ) as 'attending'
+,DATE_FORMAT(a.appointment_date,'%b-%d') as 'appt'
+,LEFT(a.start_time,5) as 'start'
+,LEFT(a.end_time,5) as 'end'
+,LEFT(a.name,17) as 'short name'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,LEFT(a.reason,26) as 'reason'
+,a.status as 'o.'
+,LEFT(a.notes,18) as 'notes'
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+, d.phone,
+CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,(select doc.observationdate
+    from document doc
+
+    INNER JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+
+    where (UPPER(doc.doctype) = 'AFFILIATION FORM- SIGNED'
+      or
+    (doc.doctype = 'N/A' AND UPPER(LEFT(doc.docdesc,23)) = 'AFFILIATION FORM SIGNED'))
+and ctl.module_id = d.demographic_no order by doc.observationdate DESC limit 1
+) as 'affiliated'
+,CONCAT( LEFT(pUp.last_name,7) , ', ', LEFT( pUp.first_name, 1) ) as 'touched'
+
+from (SELECT @row := 0) r
+,appointment a
+inner join demographic d on a.demographic_no = d.demographic_no
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+left join provider pApp ON a.provider_no = pApp.provider_no
+left join provider pUp ON a.lastupdateuser = pUp.provider_no
+
+where a.appointment_date IN (CURDATE(), CURDATE() + INTERVAL 1 DAY)
+
+and a.status NOT IN( 'P', 'i', 'j', 'h' )
+
+
+order by a.appointment_date
+,a.provider_no
+,a.start_time
+,a.end_time
+,a.name
+</query>
+
+</report>
