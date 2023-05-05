@@ -1,0 +1,31 @@
+<report title="Heart Failure in ER" description="Heart Failure ER visits" active="1">
+<!--Scott Gingras Mar7 2023 www.junoemr.com/pincher_creek-->
+<query>
+select CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,d.hin as 'PHN'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,DATE_FORMAT(n.observation_date,'%Y-%b-%d') as 'date'
+,LEFT(n.note,110) as 'note'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex
+,d.phone
+,(select MIN(a.appointment_date) from appointment a where a.demographic_no=d.demographic_no and a.status NOT LIKE '%C%' and a.status NOT LIKE '%X%' AND a.appointment_date>NOW()) as 'next appt'
+,d.city
+
+from casemgmt_note n
+LEFT JOIN demographic d ON n.demographic_no = d.demographic_no
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+where d.patient_status = 'AC' 
+and n.observation_date >= '{sdate}'
+and n.observation_date <= '{edate}'
+and n.note LIKE '%outpatient%'
+and (n.note LIKE '%heart failure%' or n.note LIKE '%chf%')
+and n.note NOT LIKE '%consult%'
+order by d.last_name, d.first_name, n.observation_date
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

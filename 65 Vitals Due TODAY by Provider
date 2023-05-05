@@ -1,0 +1,101 @@
+<report title="Vitals Due TODAY by Attending Provider" description="Vital measurements due for patients with an appointment booked today selected by the provider attending the patient appointment" active="1">
+<!--Scott Gingras Apr12 2022 www.junoemr.com/pincher_creek-->
+<query>
+select * from (
+    SELECT CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS "link"
+    ,CONCAT( d.last_name , ", ", d.first_name ) AS "patient name"
+    ,a.start_time
+    ,d.hin AS "PHN"
+    ,CONCAT( LEFT(proAttending.last_name,7) , ", ", LEFT( proAttending.first_name, 1) ) AS "attending"
+    ,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, "-", d.month_of_birth, "-", d.date_of_birth), "%Y-%m-%d"), CURDATE()) AS "age"
+    ,d.sex
+    ,"BP Due" as "vitals"
+
+    FROM demographic d
+    INNER JOIN appointment a ON d.demographic_no = a.demographic_no
+    LEFT JOIN provider proAttending ON a.provider_no = proAttending.provider_no
+    WHERE 
+    a.provider_no LIKE {provider_no} 
+    AND a.appointment_date = CURDATE()
+    AND d.patient_status = "AC"
+    AND d.provider_no NOT IN ("10000", "10160", "10003", "10052")
+    AND d.demographic_no NOT IN (
+        select demographic_no 
+        from measurements 
+        where type = "bp" 
+        and dateObserved >= DATE_SUB( CURDATE(), INTERVAL 1 YEAR )
+    )
+) tBP
+where tBP.age >= 18
+
+UNION
+
+select * from (
+    SELECT CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS "link"
+    ,CONCAT( d.last_name , ", ", d.first_name ) AS "patient name"
+    ,a.start_time
+    ,d.hin AS "PHN"
+    ,CONCAT( LEFT(proAttending.last_name,7) , ", ", LEFT( proAttending.first_name, 1) ) AS "attending"
+    ,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, "-", d.month_of_birth, "-", d.date_of_birth), "%Y-%m-%d"), CURDATE()) AS "age"
+    ,d.sex
+    ,"Weight Due" as "vitals"
+
+    FROM demographic d
+    INNER JOIN appointment a ON d.demographic_no = a.demographic_no
+    LEFT JOIN provider proAttending ON a.provider_no = proAttending.provider_no
+    WHERE 
+    a.provider_no LIKE {provider_no} 
+    AND a.appointment_date = CURDATE()
+    AND d.patient_status = "AC"
+    AND d.provider_no NOT IN ("10000", "10160", "10003", "10052")
+    AND d.demographic_no NOT IN (
+        select demographic_no 
+        from measurements 
+        where type = "wt" 
+        and dateObserved >= DATE_SUB( CURDATE(), INTERVAL 1 YEAR )
+    )
+) tWT
+where tWT.age >= 18
+
+order by `patient name`
+
+</query>
+
+<param id="provider_no" type="list" description="Attending">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        
+        and provider.provider_no IN (
+            -- Tobias Gelber
+            1001
+
+            -- Bev Burton
+            ,10016
+
+            -- Gavin Parker
+            ,1002
+            
+            -- Tracy Burton
+            ,1004
+            
+            -- Jared Van Bussel
+            ,1005
+            
+            -- Ashley Rommens
+            ,1006
+
+            -- Cheryl Dolan
+            ,10012
+
+            -- Nursing Appointments
+            ,43
+               
+        )
+        order by provider;
+    </param-query>
+</param>
+
+</report>

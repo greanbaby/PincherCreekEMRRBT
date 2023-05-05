@@ -1,0 +1,81 @@
+<report title="Scott Appt List Query 2022" description="Scott Appt List Query 2022 please do not delete DOES NOT INCLUDE CANCALLED OR NO SHOWS  " active="1">
+<!--Scott Gingras Apr10 2022 junoemr.com/pincher_creek-->
+<query>
+select a.appointment_date
+,a.start_time 
+,a.name
+,a.reason
+,a.status
+,CONCAT( LEFT(pApp.last_name,7) , ', ', LEFT( pApp.first_name, 1) ) as 'attending' 
+,a.notes
+,a.type
+,CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,d.hin as 'PHN'
+
+from appointment a 
+inner join demographic d on a.demographic_no = d.demographic_no 
+left join provider proPanel ON d.provider_no = proPanel.provider_no
+left join provider pApp ON a.provider_no = pApp.provider_no
+left join provider pUp ON a.lastupdateuser = pUp.provider_no
+
+where a.appointment_date >= '{sdate}'
+and a.appointment_date <= '{edate}' 
+AND a.provider_no LIKE {provider_no}
+AND a.status <> 'NS'
+AND a.status <> 'N'
+AND a.status <> 'C'
+AND a.status <> 'CS'
+
+order by 
+a.appointment_date 
+,a.start_time 
+,a.end_time 
+,a.name
+</query>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+<param id="provider_no" type="list" description="Provider">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (
+            -- Tobias Gelber
+            1001
+
+            -- Bev Burton
+            ,10016
+
+            -- Gavin Parker
+            ,1002
+            
+            -- Tracy Burton
+            ,1004
+            
+            -- Jared Van Bussel
+            ,1005
+            
+            -- Ashley Rommens
+            ,1006
+            
+            -- SM
+            ,1007
+            
+            -- DRut
+            ,1008
+
+            -- Cheryl Dolan
+            ,10012
+
+            -- Nursing Appointments
+            ,43
+               
+        )
+        order by provider;
+    </param-query>
+</param>
+</report>

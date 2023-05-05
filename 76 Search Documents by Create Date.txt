@@ -1,0 +1,32 @@
+<report title="Search Documents by Create Date" description="Search documents by create date" active="1">
+<!--Scott Gingras Mar7 2023 www.junoemr.com/pincher_creek
+<query>
+select DATE_FORMAT(doc.contentdatetime,'%Y-%b-%d') as 'observed',
+doc.doctype,
+LEFT(doc.docdesc,34) as 'docdesc',
+CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",dem.demographic_no,"&displaymode=edit&dboperation=search_detail/>",dem.demographic_no,"<a/>" ) AS 'Pt Link',
+dem.last_name as 'Pt LastName',
+dem.first_name as 'Pt FirstName',
+dem.hin,
+CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel',
+DATE_FORMAT(doc.updatedatetime,'%Y-%b-%d') as 'updated',
+CONCAT(LEFT(pro.last_name,6),', ',LEFT(pro.first_name,7)) as 'Creator'
+
+from document doc
+LEFT JOIN ctl_document ctl ON doc.document_no = ctl.document_no
+LEFT JOIN demographic dem ON ctl.module_id = dem.demographic_no
+LEFT JOIN provider pro ON doc.doccreator = pro.provider_no
+LEFT JOIN provider proPanel ON dem.provider_no = proPanel.provider_no
+
+where (doc.doctype like '%{srch}%' or doc.docdesc like '%{srch}%')
+and doc.contentdatetime >= '{sdate}'
+and doc.contentdatetime <= '{edate}'
+order by doc.contentdatetime DESC;
+</query>
+<param id="srch" type="text" description="Search in documents">
+</param>
+<param id="sdate" type="date" description="Start Date:"> 
+</param>
+<param id="edate" type="date" description="End Date:"> 
+</param>
+</report>

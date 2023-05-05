@@ -1,0 +1,1224 @@
+
+	
+60 examples of report by template in a text file
+
+Plain Text icon 60 Example Reports by Template.txt — Plain Text, 62 kB (64359 bytes)
+File contents
+
+
+----this is my modified code to target the selection of providers-----------------------------------------------------------------------------------
+
+
+ <param id="provider_no" type="list" description="Provider Number">
+      <param-query>select provider_no, CONCAT( first_name, ' (', provider_no, ')') from provider where provider_no between 99 and 105 order by last_name;</param-query>
+    </param>
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Blank" description="Blank" active="1">
+<query>
+
+
+Place query here
+
+
+</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Surgical History lookup" description="Search surgical history" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+from demographic d, eChart e where e.familyHistory like '%{searchtext}%' and patient_status = 'AC' and d.demographic_no = e.demographicNo order by last_name, first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="Search for patients by Surgical History"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+<report title="Medical History lookup" description="Search Medical History" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+from demographic d, eChart e where e.medicalHistory like '%{searchtext}%'  and patient_status = 'AC' and d.demographic_no = e.demographicNo order by last_name, first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="Search for patients by Medical History"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Ongoing Concerns search" description="Search in Ongoing Concerns" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as Patient,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as Age, d.provider_no as ProviderNo 
+from demographic d, eChart e where e.ongoingConcerns like '%{namesearch}%' and patient_status = 'AC' and d.demographic_no = e.demographicNo
+and d.provider_no = '{provider_no}'
+ order by last_name, first_name ;
+
+</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+   <param id="namesearch" type="text" description="Search in Ongoing Concerns for:" />
+
+</report>
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Social History lookup" description="Search social history" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+from demographic d, eChart e where e.socialHistory like '%{searchtext}%' and patient_status = 'AC' and d.provider_no='{provider_no}' and d.demographic_no = e.demographicNo order by last_name, first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="Search for patients by Social/Family history"> </param>
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Disease Registry lookup" description="Search for patients in the Disease Registry by ICD 9 code" active="1">
+
+<query>
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+
+from demographic d, dxresearch dx where 
+dx.dxresearch_code = '{searchtext}' and 
+d.patient_status = 'AC' and dx.status = 'A' and 
+dx.demographic_no = d.demographic_no 
+order by d.last_name, d.first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="ICD 9 code">  </param>
+
+</report>
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report id="5" title="Medication lookup" description="Reports patients by prescribed drug name and prescription date" active="1">
+
+   <query>
+select distinct de.last_name "Medication", de.first_name "{drugname}" from drugs dr, demographic de where dr.demographic_no = de.demographic_no and de.patient_status = 'AC' and ( BN like '%{drugname}%') and rx_date > '{rx_date}' order by last_name;</query>
+
+
+
+
+   <param id="drugname" type="text" description="Medication keyword" />
+
+   <param id="rx_date" type="date" description="Prescription Date (From date)"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="eGFR lookup" description="Report of patients by eGFR values" active="1">
+<query>
+select distinct demo.last_name,demo.first_name, type,dataField,dateObserved, demo.provider_no from measurements, demographic demo where type ="eGFR" and dataField <> '> 120' and dataField <> 'Not report' and dataField < {gfr}  and dateObserved > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-{mon})*100)+1) and demo.patient_status = 'AC'  and demographicNo =demo.demographic_no order by demo.last_name,demo.first_name and dateObserved ;</query>
+
+<param id="gfr" type="text" description="eGFR less than"> </param>
+<param id="mon" type="text" description="Within the last (months)"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="HbA1C lookup" description="Searches for patients by recent HbA1C result" active="1">
+<query>
+select distinct demo.last_name,demo.first_name,dataField ,dateObserved from measurements, demographic demo where type ="A1C" and dataField > {ac} and demo.patient_status = 'AC' and dateObserved > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-{mon})*100)+1)  and demographicNo =demo.demographic_no order by demo.last_name,demo.first_name ;</query>
+
+<param id="ac" type="text" description="HbA1C greater than"> </param>
+<param id="mon" type="text" description="Within the last (months)"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Measurement values" description="Measurement values (yes/no)" active="1">
+   <query>
+   select last_name,first_name,concat(date_of_birth,'-',month_of_birth,'-',year_of_birth) as DOB, dataField from measurements,demographic  where measurements.demographicNo = demographic.demographic_no and  type = '{type}' and dataField like '{keyvals}%';  
+   </query>
+   <param id="type" type="list" description="Measurement Type">
+      <param-query>select distinct type,typeDisplayName from measurementType where validation =7;</param-query>
+   </param>
+   <param id="keyvals" type="list" description="Key Value">
+      <choice id="y">Yes</choice>
+      <choice id="n">No</choice>
+      <choice id="%">Nonset</choice>
+   </param>
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Social History lookup" description="Search social history" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+from demographic d, eChart e where e.socialHistory like '%{searchtext}%' and patient_status = 'AC' and d.demographic_no = e.demographicNo order by last_name, first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="Search for patients by Social/Family history"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Number of medications" description="Reports patients 70 and older on multiple medications" active="1">
+
+   <query>
+select de.last_name"Surname",de.first_name"First name", (Year(CURDATE())- de.year_of_birth)"Age", count(drugid)"Number of medications" from drugs dr, demographic de where dr.demographic_no = de.demographic_no and de.patient_status = 'AC' and dr.end_date > CURDATE() and de.year_of_birth < (Year(CURDATE())-69)  group by de.last_name, de.first_name;  
+</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Document search" description="Searches document descriptor by provider,patient age and sex. " active="1">
+<query>
+
+select de.last_name, de.first_name, d.docdesc, d.observationdate from document d, ctl_document cd, demographic de  where d.document_no = cd.document_no and de.demographic_no = cd.module_id and de.provider_no = "{provider_no}" and de.year_of_birth {age} and de.sex like "{sex}%" and de.patient_status = "AC" and d.docdesc like "%{document}%" order by de.last_name;
+
+</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+<param id="document" type="text" description="Document descriptor"> </param>
+
+<param id="sex" type="text" description="Sex: F, M or BLANK "> </param>
+
+<param id="age" type="text" description="Age: = < > YOB or BLANK"> </param>
+
+
+
+
+</report>
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Medical History lookup" description="Search Medical History by Provider" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+from demographic d, eChart e where e.medicalHistory like '%{searchtext}%'  and patient_status = 'AC' and d.provider_no = "{provider_no}" and d.demographic_no = e.demographicNo order by last_name, first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="Search for patients by Medical History"> </param>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Disease Registry lookup" description="Search for patients in the Disease Registry by ICD 9 code" active="1">
+
+<query>
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age
+
+from demographic d, dxresearch dx where 
+dx.dxresearch_code = '{searchtext}' and 
+d.patient_status = 'AC' and d.provider_no = "{provider_no}" and dx.status = 'A' and 
+dx.demographic_no = d.demographic_no 
+order by d.last_name, d.first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="ICD 9 code">  </param>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Patient search by billing diagnostic code" description="Lists patients by billing diagnostic code " active="1">
+<query>
+
+select distinct demo.last_name "ICD 9 ", demo.first_name "{code}" from billingmaster bm,demographic demo where bm.dx_code1 = '{code}' and
+demo.patient_status = 'AC' and
+demo.demographic_no = bm.demographic_no 
+order by demo.last_name ;
+
+</query>
+
+<param id="code" type="text" description="ICD 9 code"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Resident Details" description="Details reasons for patients seen in the clinic by the resident over a given period " active="1">
+<query>
+
+select @row := @row + 1 as No, a.notes "Notes",demo.last_name"Surname", demo.first_name "First name", (Year(CURDATE())- demo.year_of_birth)"Age", a.appointment_date "Appointment date", a.reason "Reason" from appointment a, (SELECT @row := 0) r, demographic demo where a.appointment_date >= '{start}' and a.appointment_date <= '{finish}' and a.demographic_no <> '0'  and a.reason <> "" and (a.status<> "N" and a.status<> "NS" and a.status<> "C") and demo.patient_status = 'AC' and (a.provider_no = '{provider_no}') and a.demographic_no = demo.demographic_no 
+order by a.notes,a.appointment_date;
+
+</query>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Resident Number Details" description="Details number of patients seen in the clinic by the resident over a given period " active="1">
+<query>
+
+select a.appointment_date "Date", count(a.appointment_no)"Number of patients" from appointment a, demographic demo where a.appointment_date >= '{start}' and a.appointment_date <= '{finish}' and a.demographic_no <> '0'  and a.reason <> "" and (a.status<> "N" and a.status<> "NS" and a.status<> "C") and demo.patient_status = 'AC' and (a.provider_no = '{provider_no}') and a.demographic_no = demo.demographic_no 
+group by a.appointment_date order by a.appointment_date;
+
+</query>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Utility: DM billing" description="List of patients in the diabetic registry and have been seen within the last six months and that have not had a 14050 or 14052 billed within the last year" active="1">
+<query>
+select distinct demo.last_name"DM", demo.first_name"BILLING" from
+dxresearch dx, demographic demo, appointment a where
+dx.dxresearch_code = '250' and
+demo.patient_status ='AC' and demo.roster_status <> 'Private billings' and
+dx.status = 'A' and 
+a.appointment_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and
+demo.demographic_no = dx.demographic_no and
+a.demographic_no = demo.demographic_no and
+demo.demographic_no not in
+(select distinct demo.demographic_no from billingmaster bm, demographic demo, billing b where 
+b.billing_no = bm.billing_no and b.demographic_no = demo.demographic_no and 
+( (bm.billing_code = '14050' or bm.billing_code = '14052') and bm.service_date > ((CURDATE() + 0)- 10000) ) );</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Utility: CHF billing" description="List of patients who are in the CHF registry and have been seen within the last 6  months and have not had a 14051 or 14052 billed within the last year " active="1">
+<query>
+select distinct demo.last_name"CHF", demo.first_name"BILLING" from
+dxresearch dx, demographic demo, appointment a where
+dx.dxresearch_code = '428' and
+demo.patient_status ='AC' and demo.roster_status <> 'Private billings' and
+dx.status = 'A' and
+a.appointment_date >((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and  
+demo.demographic_no = dx.demographic_no and
+demo.demographic_no = a.demographic_no and 
+demo.demographic_no not in
+(select distinct demo.demographic_no from billingmaster bm, demographic demo, billing b where 
+b.billing_no = bm.billing_no and b.demographic_no = demo.demographic_no and 
+( (bm.billing_code = '14051' or bm.billing_code = '14052') and bm.service_date > ((CURDATE() + 0)- 10000) ) );</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Utility: HBP Billing" description="Lists patients in the Disease Registry for more than 6 months with HBP, not listed with DM, CHF, AbnGTT,and have been seen within the last 6 months, and have not had 14052 billed in 1 year" active="1">
+<query>
+
+select distinct demo.last_name"HBP", demo.first_name"BILLING" from 
+dxresearch dx, demographic demo, appointment a where 
+dx.dxresearch_code = '401' and dx.start_date < ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and
+demo.patient_status = 'AC' and demo.roster_status <> 'Private billings' and dx.status = 'A' and
+a.appointment_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and
+demo.demographic_no = dx.demographic_no and 
+demo.demographic_no = a.demographic_no and 
+dx.demographic_no not in 
+
+(select demographic_no from 
+dxresearch where dxresearch_code = '250' or dxresearch_code = '428' or 
+dxresearch_code = '7901') and 
+dx.demographic_no not in 
+
+(select distinct bm.demographic_no from billingmaster bm
+where bm.billing_code = '14052' and 
+bm.service_date > ((curdate() + 0)- 10000) and 
+ bm.demographic_no = dx.demographic_no)
+order by demo.last_name ; 
+
+</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Unbilled visits " description="Searches for patients who had an appointment but were not billed and were not seen by Kim, Val or Tanya" active="1">
+<query>
+
+select demo.last_name"From {start}" ,demo.first_name"To {finish}" ,a.appointment_date"Date", a.status"Status",a.provider_no,a.reason from appointment a, demographic demo where a.appointment_date >= '{start}' and a.appointment_date <= '{finish}'  and a.demographic_no <>'0' and a.reason <> "" and a.provider_no not in ('405','410','400','910') and a.status not in ("B","BS","BV","C","N","CS","NS") 
+and demo.demographic_no =a.demographic_no and
+a.appointment_no not in
+(select a.appointment_no from appointment a, billingmaster bm where a.appointment_date >= '{start}' and a.appointment_date <= '{finish}' 
+and a.appointment_no = bm.appointment_no); 
+
+</query>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="00108 and 00128 lookup" description="Lists  distinct patients  billed 00108 and 00128 from a certain date  " active="1">
+<query>
+
+select  distinct demo.last_name,demo.first_name from billingmaster bm,demographic demo,billing b where
+bm.billing_code in ('00108','00128') and
+b.billing_date >= "{start_date}" and b.billing_date <= "{finish_date}"  and
+demo.demographic_no = bm.demographic_no and  b.demographic_no = bm.demographic_no
+order by demo.last_name ;
+
+</query>
+<param id="start_date" type="date" description="From date"> </param>
+<param id="finish_date" type="date" description="To date"> </param>
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Utility: DisReg Population" description="Lists patients by billing diagnostic code that have not been entered into the Disease Registry" active="1">
+<query>
+
+select distinct demo.last_name "ICD 9 ", demo.first_name "{code}" from billingmaster bm,demographic demo where
+demo.provider_no = '{provider_no}' and bm.dx_code1 = '{code}' and
+demo.patient_status = 'AC' and
+demo.demographic_no = bm.demographic_no and 
+demo.demographic_no not in
+
+(select dx.demographic_no from dxresearch dx where 
+dx.dxresearch_code = '{code}' and dx.demographic_no = demo.demographic_no)
+order by demo.last_name ;
+
+</query>
+
+  <param id="provider_no" type="list" description="Provider Number">
+      <param-query>select provider_no, CONCAT( last_name,first_name,  ' (', provider_no, ')') from provider order by last_name;</param-query>
+    </param>
+<param id="code" type="text" description="ICD 9 code"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Complex Care" description="Report of complex care patients awaiting major review for this year" active="1">
+<query>
+select distinct demo.last_name"Complex",demo.first_name"Care"  
+from billing b, billingmaster bm, demographic demo where (b.provider_no = '{provider_no}' and 
+b.billing_no = bm.billing_no and demo.demographic_no = b.demographic_no and bm.billing_code = '14033' and demo.patient_status = 'AC'and demo.roster_status <> 'Private billings') and b.demographic_no  not in(select distinct bm.demographic_no 
+from billing b, billingmaster bm where b.provider_no = '{provider_no}' and 
+b.billing_no = bm.billing_no and bm.billing_code = '14033' and
+b.billing_date > (((EXTRACT(YEAR from CURDATE()))*10000)+101)) 
+order by b.demographic_name;
+
+</query>
+
+ 
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+ 
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Risk Assessments" description="Reports the number of 14066s billed this year by provider" active="1">
+<query>
+select count(distinct b.demographic_name) "Number of risk assessments billed this year" from billing b, billingmaster bm where b.provider_no = '{provider_no}' and 
+b.billing_no = bm.billing_no and bm.billing_code = '14066' and 
+b.billing_date > (((EXTRACT(YEAR from CURDATE()))*10000)+101) 
+order by b.demographic_name;
+
+</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Billing code lookup" description="Lists number of patients by billing code by provider from the beginning of the year " active="1">
+<query>
+
+select count(distinct demo.last_name, demo.first_name)'Code{code}' from billingmaster bm,demographic demo where
+demo.provider_no = '{provider_no}' and bm.billing_code = '{code}' and
+demo.patient_status = 'AC' and 
+bm.service_date > (((EXTRACT(YEAR from CURDATE()))*10000)+101) and
+demo.demographic_no = bm.demographic_no 
+order by demo.last_name ;
+
+</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+<param id="code" type="text" description="Billing code"> </param>
+
+</report>
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Utility: DisReg Population" description="Lists patients by billing diagnostic code that have not been entered into the Disease Registry" active="1">
+<query>
+
+select distinct demo.last_name "ICD 9 ", demo.first_name "{code}" from billingmaster bm,demographic demo where
+demo.provider_no = '{provider_no}' and bm.dx_code1 = '{code}' and
+demo.patient_status = 'AC'  and bm.service_date > ((CURDATE() + 0)- 10000) and
+demo.demographic_no = bm.demographic_no and 
+demo.demographic_no not in
+
+(select dx.demographic_no from dxresearch dx where 
+dx.dxresearch_code = '{code}' and dx.demographic_no = demo.demographic_no)
+order by demo.last_name ;
+
+</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+<param id="code" type="text" description="ICD 9 code"> </param>
+
+</report>
+
+--- SECURITY-----------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Login Report" description="Report of who has logged in" active="1">
+<query>
+select user_name, b_ExpireSet as `Date Exp Enabled` , date_ExpireDate as `Expire Date`, b_LocalLockSet as `Needs PIN for local` , b_RemoteLockSet as `Needs PIN for remote`, max(log.dateTime) as `last login` from security, log   where security.provider_no = log.provider_no  and log.content = 'login'  group by log.provider_no order by `last login` desc;</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Utility: Viewers of a patient chart" description="Lists viewers of a specific patient chart" active="1">
+<query>
+
+select p.last_name as 'Viewer of {first} {last}' , p.provider_type as 'Role' , action, ip as 'IP Address' , dateTime  from log l , demographic d, provider p where d.last_name = "{last}" and d.first_name like "{first}%" and  l.demographic_no = d.demographic_no and p.provider_no = l.provider_no order by dateTime desc limit 0,{limit};
+
+</query>
+
+<param id="first" type="text" description="Patient first name"> </param>
+<param id="last" type="text" description="Patient last name"> </param>
+<param id="limit" type="text" description="Results limit-start with 30"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Login Report Expanded" description="Report of who has logged in expanded" active="1">
+<query>
+select  ip,user_name ,log.dateTime from security, log   
+where security.provider_no = log.provider_no  and log.content = 'login' and user_name = '{name}'
+and date(log.dateTime) >= '{start}'   and  date(log.dateTime) <= '{finish}'
+order by log.dateTime desc
+;</query>
+
+<param id="name" type="list" description="User Name">
+<param-query> select distinct user_name, concat(user_name,'(',provider_no,')') from security ; </param-query>
+</param>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date (not inclusive)"> </param>
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Activity by user" description="Lists Oscar activity by user" active="1">
+<query>
+
+select ip as 'IP Address'  , action,  dateTime ,d.first_name,d.last_name from log l , demographic d, provider p where l.provider_no = '{name}'  
+and  l.demographic_no  = d.demographic_no and p.provider_no = l.provider_no 
+and date(l.dateTime) >= '{start}'   and date(l.dateTime) <= '{finish}'
+order by dateTime desc;
+
+</query>
+
+<param id="name" type="list" description="User Name">
+<param-query> select distinct provider_no, concat(last_name,'(',provider_no,')') from provider ; </param-query>
+</param>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Login Report Basic" description="Report of who has logged in-simplified" active="1">
+<query>
+select date(log.dateTime) as "-----date-----",time(min(log.dateTime)) as "---start---", time(max(log.dateTime)) as "---finish ---",user_name as "---name---",((time(max(log.dateTime)))-(time(min(log.dateTime)))) as "hours" from security, log   
+where security.provider_no = log.provider_no  and log.content = 'login' and user_name = '{name}'
+and date(log.dateTime) >= '{start}'   and  date(log.dateTime) <= '{finish}'
+ group by date(log.dateTime)
+;</query>
+
+<param id="name" type="list" description="User Name">
+<param-query> select distinct user_name, concat(user_name,'(',provider_no,')') from security ; </param-query>
+</param>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date (not inclusive)"> </param>
+
+
+</report>
+
+
+--- FHA Data reports------------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC Total Diabetes" description="Reports total number of patients with Type 1 or Type 2 diabetes in the practice by doctor" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Diabetics" from demographic demo, dxresearch dx,provider p where dx.dxresearch_code in ('250') and demo.patient_status = 'AC' and  demo.roster_status not in ('MOVED','Private billings')  and demo.provider_no in ('100','101','102','103')  and dx.status = 'A' and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no ;
+</query>
+
+</report>
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC A1C in 6 months" description="Reports total number of patients with A1C in 6 months in the practice by doctor" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "A1C 6M" from measurements, demographic demo,dxresearch dx,provider p where type ="A1C" and dataField > 1 and dateObserved > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and dx.dxresearch_code = '250' and demo.patient_status = 'AC' and demo.roster_status not in ('MOVED','Private billings')  and demo.provider_no in ('100','101','102','103')  and dx.status = 'A'  and demographicNo =demo.demographic_no and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no ;
+</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC A1C < 7.0 in 6 months" description="Reports total number of  diabetic patients who have had an A1C < 7.0 in the last 6 months by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Diabetics with A1C < 7.0 in last 6 months" from measurements, demographic demo,dxresearch dx,provider p where type ="A1C"  and dataField < 7  and dataField > 1 and dateObserved > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and dx.dxresearch_code = '250' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103')   and dx.status = 'A'   and demographicNo =demo.demographic_no  and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no ;;
+</query>
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC ACR in 12 months" description="Reports total number of  diabetic patients who have had an ACR result in the last 12 months by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Diabetics with ACR measured in last year" from measurements, demographic demo,dxresearch dx, provider p where type ="ACR" and dataField > 0.1 and dateObserved > ((CURDATE() + 0)- 10000) and dx.dxresearch_code = '250' and demo.patient_status = 'AC' and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103')  and demographicNo =demo.demographic_no  and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no ;
+</query>
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC ACR > 2.0 not on ACE/ARB" description="Reports total number of  diabetic patients who have an ACR >= 2.0 in the last 12 months and are not on an ACE/ARB by provider " active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Diabetics with ACR >= 2.0 and not on ACE/ARB in last year" from measurements, demographic demo,dxresearch dx, provider p where type ="ACR" and dataField >= 2.0 and dateObserved > ((CURDATE() + 0)- 10000) and dx.dxresearch_code = '250' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103')   and demographicNo =demo.demographic_no  and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no 
+and demo.demographic_no not in 
+
+(select distinct d.demographic_no from drugs d where 
+
+(d.BN like "%pril%" or d.BN like "%prinivil%" or d.BN like "%coversyl%" or d.BN like "%accuretic%" or d.BN like "%altace%" or d.BN like "%cozaar%" or d.BN like "%hyzaar%" or d.BN like "%atacand%" or d.BN like "%avapro%" or d.BN like "%diovan%" or d.BN like "%micardis%")
+and d.demographic_no = demo.demographic_no)
+group by p.first_name order by p.provider_no ;
+;</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC Lipid in 12 months" description="Reports total number of  diabetic patients who have had a lipid test in the last 12 months by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Diabetics with lipids measured in last 12 months" from measurements, demographic demo,dxresearch dx,provider p where type ="LDL" and dataField > 0.1 and dateObserved > ((CURDATE() + 0)- 10000) and dx.dxresearch_code = '250' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103')  and dx.status = 'A'  and demographicNo =demo.demographic_no and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no ;
+</query>
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC LDL < 2.0 in 12 months" description="Reports total number of  diabetic patients who have had a LDL < 2.0 in the last 12 months by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Diabetics with LDL < 2.0 in last 12 months" from measurements, demographic demo,dxresearch dx,provider p where type ="LDL" and dataField > 0.1 and dataField < 2 and dateObserved > ((CURDATE() + 0)- 10000) and dx.dxresearch_code = '250' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103')  and dx.status = 'A'  and demographicNo =demo.demographic_no and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no ; 
+</query>
+
+ 
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC Total HBP" description="Reports total number of patients with Hypertension in the practice by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"Total number of hypertensive patients" from demographic demo, dxresearch dx,provider p where dx.dxresearch_code = '401' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103') and dx.status = 'A' and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no;
+</query>
+
+ 
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC BP 6 months" description="Reports total number of hypertensive patients who have had a blood pressure measurement in the last 6 months by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Hypertensive patients with blood pressure measurement in last 6 months" from measurements, demographic demo,dxresearch dx,provider p where type ="BP" and dataField > 50/10 and dateObserved > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and dx.dxresearch_code = '401' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103') and demographicNo =demo.demographic_no  and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no;
+</query>
+
+  
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC BP <140/90 6 months" description="Reports total number of hypertensive patients who have had a blood pressure < 140/90 in the last 6 months by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Hypertensive patients with blood pressure < 140/90 in last 6 months" from measurements, demographic demo,dxresearch dx,provider p where type ="BP"
+  and  dataField < 141  and (dataField like '%/90' or dataField like '%/8%' or dataField like '%/7%'or dataField like '%/6%'or dataField like '%/5%' or dataField like '%/4%'or dataField like '%/3%'or dataField like '%/2%' or dataField like '%/1%'or dataField like '%/0%') and dateObserved > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-6)*100)+1) and dx.dxresearch_code = '401' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103') and demographicNo =demo.demographic_no  and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no;
+</query>
+
+  
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC Total CHF" description="Reports total number of patients with CHF in the practice by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "Patients with CHF" from demographic demo, dxresearch dx,provider p where dx.dxresearch_code = '428' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' 
+and demo.provider_no in ('100','101','102','103')  and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no;
+</query>
+ 
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+<report title="FHC CHF on ACE/ARB" description="Reports total number of CHF who are on an ACEI or an ARB by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"CHF patients on ACE or ARB" from drugs d, demographic demo, dxresearch dx,provider p where (d.BN like "%pril%" or d.BN like "%prinivil%" or d.BN like "%coversyl%" or d.BN like "%accuretic%" or d.BN like "%altace%" or d.BN like "%cozaar%" or d.BN like "%hyzaar%" or d.BN like "%atacand%" or d.BN like "%avapro%" or d.BN like "%diovan%" or d.BN like "%micardis%") and d.demographic_no = demo.demographic_no and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103') and dx.dxresearch_code = '428' and d.end_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-1)*100)+1)  group by p.first_name order by p.provider_no;
+</query>
+
+ 
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC CHF on BB" description="Reports total number of patients with CHF who are on a beta blocker by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name) "CHF patients on B Blockers" from drugs d, demographic demo, dxresearch dx,provider p where (d.BN like "%olol%" or d.BN like "%atenol%" or d.BN like "%sotalol%" or d.BN like "%lopressor%" or d.BN like "%tenoretic%") and d.demographic_no = demo.demographic_no and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103')  and dx.dxresearch_code = '428' and d.end_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-1)*100)+1)  group by p.first_name order by p.provider_no;
+</query>
+
+ 
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC CHF on Both" description="Reports total number of patients with CHF on both a B blocker as well as an ACE or ARB by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"CHF on B Blocker and ACE or ARB" from dxresearch 
+dx, demographic demo, drugs d, provider p where 
+(d.BN like "%pril%" or d.BN like "%prinivil%" or d.BN like "%coversyl%" or d.BN like 
+"%accuretic%" or d.BN like "%altace%" or d.BN like "%cozaar%" or d.BN 
+like "%hyzaar%" or d.BN like "%atacand%" or d.BN like "%avapro%" or d.BN like "%diovan%" or 
+d.BN like "%micardis%")
+and dx.dxresearch_code = '428' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103')  and dx.status = 'A' and 
+d.end_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-1)*100)+1) and d.demographic_no = demo.demographic_no 
+and dx.demographic_no = demo.demographic_no and p.provider_no = demo.provider_no  
+and dx.demographic_no  in 
+
+(select distinct d.demographic_no from drugs d, dxresearch dx where
+(d.BN like "%olol%" or d.BN like "%lopressor%" or d.BN like "%sotalol%" 
+or d.BN like "%atenol%" or d.BN like "%tenoretic%")
+ and dx.dxresearch_code = '428' and d.end_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-1)*100)+1) and 
+d.demographic_no = dx.demographic_no ) 
+group by p.first_name order by p.provider_no  ;
+</query>
+
+ 
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC CHF on Neither" description="Reports total number of patients with CHF on neither a B blocker or an ACE or ARB by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name,demo.first_name)"CHF not on B Blocker or ACE or ARB" from
+dxresearch dx, demographic demo,provider p where
+dx.dxresearch_code = '428' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103')  and dx.demographic_no = demo.demographic_no and dx.demographic_no and p.provider_no = demo.provider_no  
+not in 
+
+(select d.demographic_no from drugs d, dxresearch dx where 
+(d.BN like "%olol%" or d.BN like "%atenol%" or d.BN like "%sotalol%" or d.BN like "%lopressor%" or d.BN like "%tenoretic%" or d.BN like "%pril%" or d.BN like "%prinivil%" or d.BN like "%coversyl%" or d.BN like "%accuretic%" or d.BN like "%altace%" or d.BN like "%cozaar%" or d.BN like "%hyzaar%" or d.BN like "%atacand%" or d.BN like "%avapro%" or d.BN like "%diovan%" or d.BN like "%micardis%") and 
+
+dx.dxresearch_code = '428' and d.end_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-1)*100)+1) and d.demographic_no = dx.demographic_no) group by p.first_name order by p.provider_no;
+</query>
+
+ 
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC Total CKD" description="Number of patients with CKD by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name,demo.first_name)"Total number of patients with CKD" from measurements, demographic demo,provider p where type ="eGFR" and dataField <> '> 120' and dataField <> 'Not report' and dataField < 61 and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103') and demographicNo =demo.demographic_no and p.provider_no = demo.provider_no group by p.first_name order by p.provider_no;
+</query>
+
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FHC CKD on ACE/ARB" description="Reports total number of CKD who are on an ACEI or an ARB by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"CKD patients on ACE or ARB" from drugs d, demographic demo, dxresearch dx, measurements m,provider p where (d.BN like "%pril%" or d.BN like "%prinivil%" or d.BN like "%coversyl%" or d.BN like "%accuretic%" or d.BN like "%altace%" or d.BN like "%cozaar%" or d.BN like "%hyzaar%" or d.BN like "%atacand%" or d.BN like "%avapro%" or d.BN like "%diovan%" or d.BN like "%micardis%") and d.demographic_no = demo.demographic_no and dx.demographic_no = demo.demographic_no  and m.demographicNo =demo.demographic_no  and p.provider_no = demo.provider_no and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and dx.status = 'A' and demo.provider_no in ('100','101','102','103') and type ="eGFR" and dataField <> '> 120' and dataField <> 'Not report' and dataField < 61 and d.end_date > ((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-1)*100)+1)  group by p.first_name order by p.provider_no ;
+</query>
+ 
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC Total Complex Care" description="Number of patients in the complex care program by provider" active="1">
+<query>
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"Complex Care" from
+billingmaster bm, demographic demo,provider p where 
+demo.demographic_no = bm.demographic_no and p.provider_no = demo.provider_no  and
+bm.billing_code = '14033' and demo.patient_status = 'AC'  and demo.roster_status not in ('MOVED','Private billings') and demo.provider_no in ('100','101','102','103')  group by p.first_name order by p.provider_no;
+
+</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC Total Patients" description="Number of Active Patients in Practice by provider" active="1">
+<query>
+
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"Active patients" from demographic demo, eChart e, provider p where
+demo.patient_status = 'AC' and e.encounter like "%igned%" and demo.provider_no in ('100','101','102','103','104') and 
+demo.demographic_no = e.demographicNo and p.provider_no = demo.provider_no 
+group by p.first_name order by p.provider_no;
+
+</query>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="FEC Distinct patients seen in 1yr/provider" description="Number of distinct patients seen in last year/provider" active="1">
+<query>
+
+select p.first_name"Provider", count(distinct demo.last_name, demo.first_name)"Distinct patients seen in 1 yr" from demographic demo, eChart e,provider p where
+demo.patient_status = 'AC' and e.encounter like "%signed%" and e.timeStamp > ((CURDATE() + 0)- 10000)
+and demo.provider_no in ('100','101','102','103') and
+demo.demographic_no = e.demographicNo and p.provider_no = demo.provider_no 
+group by p.first_name order by p.provider_no;
+
+</query>
+
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Number of patient hospital days" description="Number of clinic patient days in hospital over a period of time by provider " active="1">
+<query>
+
+select p.first_name"Provider", sum(bm.billing_unit) "No of patient hospital days from {start} to {finish}" from billingmaster bm, demographic demo, provider p 
+where demo.demographic_no = bm.demographic_no and p.provider_no = demo.provider_no and demo.provider_no in ('100','101','102','103') and
+bm.billingmaster_no in
+
+(select distinct bm.billingmaster_no from billing b, billingmaster bm, demographic demo where  bm.billing_code in ('00109','13008','13108','00108','00128','13028','00127','13127') and b.billing_no = bm.billing_no 
+and demo.demographic_no = bm.demographic_no and demo.patient_status in ('AC','DE')
+and b.billing_date >= '{start}' and b.billing_date <= '{finish}')
+ group by p.first_name order by p.provider_no;
+
+</query>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Number of distinct patients admitted" description="Number of distinct patients admitted over a period of time by provider " active="1">
+<query>
+
+select p.first_name"Provider", count(distinct demo.last_name,demo.first_name) "No of distinct patients admitted from {start} to {finish}" from billingmaster bm,demographic demo, provider p 
+where demo.demographic_no = bm.demographic_no and p.provider_no = demo.provider_no and demo.provider_no in ('100','101','102','103') and
+bm.billingmaster_no in
+
+(select distinct bm.billingmaster_no from billing b, billingmaster bm, demographic demo where bm.billing_code in ('00109','13008','13108','00108','00128','13028') and b.billing_no = bm.billing_no 
+and demo.demographic_no = bm.demographic_no and demo.patient_status in ('AC','DE')
+and b.billing_date >= '{start}' and b.billing_date <= '{finish}')
+ group by p.first_name order by p.provider_no ;
+
+</query>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Patient lookup by address and disease" description="Search for patients in the Disease Registry by ICD 9 code and postal code and provider physician" active="1">
+
+<query>
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age,d.address, d.postal
+
+from demographic d, dxresearch dx where 
+dx.dxresearch_code = '{searchtext}' and 
+d.patient_status = 'AC' and d.provider_no = "{provider_no}" and d.postal like "%{postal}%" and dx.status = 'A' and 
+dx.demographic_no = d.demographic_no 
+order by d.last_name, d.first_name;
+
+</query>
+
+<param id="searchtext" type="text" description="ICD 9 code">  </param>
+<param id="postal" type="text" description="Postal code">  </param>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Patient lookup by postal code" description="Search for patients by postal code and provider physician" active="1">
+
+<query>
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as demographic,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as age,d.address, d.postal
+
+from demographic d where  
+d.patient_status = 'AC' and d.provider_no = "{provider_no}" and d.postal like "%{postal}%" 
+order by d.last_name, d.first_name;
+
+</query>
+
+
+<param id="postal" type="text" description="Postal code">  </param>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Pneumovax immunization number" description="Gives number of Pneumovax immunizations over a period of time" active="1">
+<query>
+select count(id)"Number of Pneumovax immunizations given from {start} to {finish}" from preventions where prevention_date >= '{start}' and prevention_date <= '{finish}' and prevention_type = 'Pneumovax';
+
+</query>
+
+<param id="start" type="date" description="Start date"> </param>
+<param id="finish" type="date" description="Finish date"> </param>
+
+</report>
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="Lists over 65yr not pneumovax immunised" description="Gives names of over 65yr olds not  pneumovax immunized" active="1">
+<query>
+select distinct demo.last_name,demo.first_name"Over 65yr not pneumovax immunized" from preventions p, demographic demo, 
+eChart e where demo.year_of_birth <= (Year(CURDATE())-65) and demo.patient_status = 'AC'
+and e.encounter like "%signed%" and 
+demo.demographic_no = e.demographicNo and  p.demographic_no= e.demographicNo 
+and demo.demographic_no = p.demographic_no
+and demo.demographic_no not in
+
+(select p.demographic_no from preventions p where p.prevention_type = 'Pneumovax')
+order by demo.last_name;
+</query>
+
+
+</report>
+
+
+
+--- End of Life Program tools-------------------------------------------------------------------------------------------------------------
+
+
+<report title="Advanced Care Plan Pts" description="Search for free text in reminders" active="1">
+
+<query>
+
+select distinct CONCAT(d.last_name,', ', d.first_name)
+as Patient,
+  (YEAR(CURRENT_DATE)-YEAR(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d')))-(RIGHT(CURRENT_DATE,5)<RIGHT(DATE_FORMAT(CONCAT((d.year_of_birth),'-',(d.month_of_birth),'-',(d.date_of_birth)),'%Y-%m-%d'),5)) 
+as Age, d.provider_no as ProviderNo 
+from demographic d, eChart e where e.reminders like '%{namesearch}%' and patient_status = 'AC' and d.demographic_no = e.demographicNo
+and d.provider_no = '{provider_no}'
+ order by last_name, first_name ;
+
+</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+   <param id="namesearch" type="text" description="Search in REMINDERS for:(eg ACP)" />
+
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="CC Patient List" description="Lists complex care patients and phone numbers" active="1">
+<query>
+select distinct demo.last_name"Complex",demo.first_name"Care",demo.phone "Home Phone",demo.phone2"Alternate Phone",demo.email"Email"
+from billing b, billingmaster bm, demographic demo where (b.provider_no = '{provider_no}' and 
+b.billing_no = bm.billing_no and demo.demographic_no = b.demographic_no and bm.billing_code = '14033' and b.billing_date >((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-17)*100)+1) and demo.patient_status = 'AC'and demo.roster_status <> 'Private billings')
+order by demo.last_name;
+
+</query>
+
+ 
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+ 
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="CC Patient Labels" description="Complex care patients and addresses" active="1">
+<query>
+select distinct demo.last_name"Last name",demo.first_name"First name",demo.address, demo.city,demo.postal
+from billing b, billingmaster bm, demographic demo where (b.provider_no = '{provider_no}' and 
+b.billing_no = bm.billing_no and demo.demographic_no = b.demographic_no and bm.billing_code = '14033' and b.billing_date >((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-17)*100)+1) and demo.patient_status = 'AC'and demo.roster_status <> 'Private billings')
+order by demo.last_name;
+
+</query>
+
+ 
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+ 
+</report>
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+<report title="COPD List" description="Lists COPD patients with action plans in last 12 months and phone numbers" active="1">
+<query>
+select distinct demo.last_name"Complex",demo.first_name"Care",demo.phone "Home Phone",demo.phone2"Alternate Phone",demo.email"Email"
+from billing b, billingmaster bm, demographic demo where (b.provider_no = '{provider_no}' and 
+b.billing_no = bm.billing_no and demo.demographic_no = b.demographic_no and bm.billing_code = '14053' and b.billing_date >((PERIOD_ADD(EXTRACT(YEAR_MONTH FROM CURDATE()),-11)*100)+1) and demo.patient_status = 'AC'and demo.roster_status <> 'Private billings')
+order by demo.last_name;
+
+</query>
+
+ 
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+ 
+</report>
+
+
+
+------Maternity tool------------------------------------------------------------------------------------------------------------
+
+
+<report title="EDD lookup" description="Report of maternity patients by EDD starting 14 days before today's date" active="1">
+<query>
+select distinct MONTHNAME(dataField)"MONTH",YEAR(dataField)"DUE------", demo.first_name "Patient", demo.last_name "Name", dataField "EDD" from measurements, demographic demo where type ="EDD"  and dataField >(select subdate(curdate(),interval 14 day)) and demo.patient_status = 'AC' and demo.provider_no = {provider_no} and demographicNo =demo.demographic_no  
+and dateEntered in
+(select max(dateEntered) from measurements, demographic demo where type ="EDD" and dataField >(select subdate(curdate(),interval 14 day)) and demo.patient_status = 'AC' and demo.provider_no = {provider_no} and demographicNo =demo.demographic_no group by demo.last_name,demo.first_name)
+order by dataField 
+
+;</query>
+
+<param id="provider_no" type="list" description="Provider Number">
+<param-query> select provider_no, concat(last_name,',',first_name,'(',provider_no,')') from provider order by last_name; </param-query>
+</param>
+</report>
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+

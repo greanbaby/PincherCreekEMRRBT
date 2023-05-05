@@ -1,0 +1,22 @@
+select	
+  CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS 'link'
+  ,CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+  ,d.hin as 'PHN'
+	,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+	,d.hin
+  ,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+	,DATE(prevention_date) as 'Done'
+	,DATE(next_date) as 'Next_Date' 
+from preventions p
+inner join demographic d ON p.demographic_no = d.demographic_no 
+left join provider proPanel ON d.provider_no = proPanel.provider_no 
+where prevention_type = 'PAP'
+  AND refused <> 1
+  AND deleted <> 1
+  AND never <> 1
+  AND d.patient_status = 'AC'
+  AND TIMESTAMPDIFF(Month,prevention_date,next_date) < 34
+  AND d.provider_no LIKE {provider_no}
+  AND next_date <= CURDATE()
+  AND p.id = (SELECT MAX(id) from preventions pr where pr.demographic_no = p.demographic_no)
+order by `patient name`

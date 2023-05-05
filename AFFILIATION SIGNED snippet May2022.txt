@@ -1,0 +1,6 @@
+(select doc.observationdate
+    from document doc    INNER JOIN ctl_document ctl ON doc.document_no = ctl.document_no    where (UPPER(doc.doctype) = 'AFFILIATION FORM- SIGNED'
+      or
+    (doc.doctype = 'N/A' AND UPPER(LEFT(doc.docdesc,23)) = 'AFFILIATION FORM SIGNED'))
+and ctl.module_id = d.demographic_no order by doc.observationdate DESC limit 1
+) as 'affiliated'

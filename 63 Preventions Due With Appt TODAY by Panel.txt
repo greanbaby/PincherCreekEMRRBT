@@ -1,0 +1,112 @@
+<report title="Preventions Due TODAY - by Panel" description="Preventions due for patients with an appointment booked today selected by the panel the patient is on" active="1">
+<!--Scott Gingras Mar31 2022 www.junoemr.com/pincher_creek-->
+<query>
+select * from (
+    SELECT CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS "link"
+    ,CONCAT( d.last_name , ", ", d.first_name ) AS "patient name"
+    ,d.hin AS "PHN"
+    ,d.phone
+    ,CONCAT( LEFT(proPanel.last_name,7) , ", ", LEFT( proPanel.first_name, 1) ) AS "panel"
+    ,d.demographic_no
+    ,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, "-", d.month_of_birth, "-", d.date_of_birth), "%Y-%m-%d"), CURDATE()) AS "age"
+    ,d.sex
+    ,"Pap Due" as "prevention"
+
+    FROM demographic d
+    LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+    WHERE d.provider_no LIKE {provider_no} 
+    AND d.demographic_no IN (
+        select demographic_no
+        from appointment
+        where appointment_date = CURDATE())
+    AND d.patient_status = "AC"
+    AND d.sex = "F"
+    AND d.provider_no NOT IN ("10000", "10160", "10003", "10052")
+    AND d.demographic_no NOT IN (
+        select demographic_no 
+        from preventions 
+        where prevention_type LIKE "%pap%" 
+        and next_date >= CURDATE())
+) tPAP
+where tPAP.age >= 25 and tPAP.age <= 69
+
+UNION
+
+select * from (
+    SELECT CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS "link"
+    ,CONCAT( d.last_name , ", ", d.first_name ) AS "patient name"
+    ,d.hin AS "PHN"
+    ,d.phone
+    ,CONCAT( LEFT(proPanel.last_name,7) , ", ", LEFT( proPanel.first_name, 1) ) AS "panel"
+    ,d.demographic_no
+    ,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, "-", d.month_of_birth, "-", d.date_of_birth), "%Y-%m-%d"), CURDATE()) AS "age"
+    ,d.sex
+    ,"Mammo Due" AS "prevention"
+    
+    FROM demographic d
+    LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+    WHERE d.provider_no LIKE {provider_no} 
+    AND d.demographic_no IN (
+        select demographic_no
+        from appointment
+        where appointment_date = CURDATE())
+    AND d.patient_status = "AC"
+    AND d.sex = "F"
+    AND d.provider_no NOT IN ("10000", "10160", "10003", "10052")
+    AND d.demographic_no NOT IN (
+        select demographic_no 
+        from preventions 
+        where prevention_type like "%mam%"
+        and next_date >= CURDATE())
+) tMAMMO
+where tMAMMO.age >= 50 and tMAMMO.age <= 74
+
+UNION
+
+select * from (
+    SELECT CONCAT( "<a target=new href=../../demographic/demographiccontrol.jsp?demographic_no=",d.demographic_no,"&displaymode=edit&dboperation=search_detail/>","*link*","<a/>" ) AS "link"
+    ,CONCAT( d.last_name , ", ", d.first_name ) AS "patient name"
+    ,d.hin AS "PHN"
+    ,d.phone
+    ,CONCAT( LEFT(proPanel.last_name,7) , ", ", LEFT( proPanel.first_name, 1) ) AS "panel"
+    ,d.demographic_no
+    ,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, "-", d.month_of_birth, "-", d.date_of_birth), "%Y-%m-%d"), CURDATE()) AS "age"
+    ,d.sex
+    ,"CRC Due" as "prevention"
+
+    FROM demographic d
+    LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no
+    WHERE d.provider_no LIKE {provider_no} 
+    AND d.demographic_no IN (
+        select demographic_no
+        from appointment
+        where appointment_date = CURDATE())
+    AND d.patient_status = "AC"
+    AND d.provider_no NOT IN ("10000", "10160", "10003", "10052")
+    AND d.demographic_no NOT IN (
+        select demographic_no 
+        from preventions 
+        where (prevention_type LIKE "%col%" 
+            or prevention_type LIKE "%fit%"
+            or prevention_type LIKE "%fob%" )
+        and next_date >= CURDATE())
+) tCRC
+where tCRC.age >= 50 and tCRC.age <= 79
+
+order by `patient name`
+
+
+</query>
+
+<param id="provider_no" type="list" description="Panel">
+    <param-query>
+        select "'%'" as provider_no, 'All Providers' as provider
+        union
+        select provider_no, concat(first_name, ' ', last_name) from provider
+        where status='1'
+        and provider.provider_no IN (1001,10016,1002,1004,1005,1006,1007,1008)
+        order by provider;
+    </param-query>
+</param>
+
+</report>

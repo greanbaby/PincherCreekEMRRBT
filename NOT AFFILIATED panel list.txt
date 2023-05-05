@@ -1,0 +1,23 @@
+<report title="NOT AFFILIATED" description="Not Affiliated Panel List All Physicians" active="1">
+<!--Scott Gingras Mar23 2021 www.junoemr.com/pincher_creek-->
+<query>
+select CONCAT( d.last_name , ', ', d.first_name ) as 'patient name'
+,d.hin as 'PHN'
+,CONCAT( LEFT(proPanel.last_name,7) , ', ', LEFT( proPanel.first_name, 1) ) as 'panel'
+,CONCAT(d.year_of_birth, '-', d.month_of_birth, '-',d.date_of_birth, '  ') as 'date of birth'
+,TIMESTAMPDIFF(YEAR, STR_TO_DATE(CONCAT(d.year_of_birth, '-', d.month_of_birth, '-', d.date_of_birth), '%Y-%m-%d'), CURDATE()) AS 'age'
+,d.sex,d.email,
+,LEFT(d.city,18) as 'city'
+,d.postal
+,d.demographic_no as 'junoID'
+
+from demographic d
+LEFT JOIN provider proPanel ON d.provider_no = proPanel.provider_no where (d.patient_status = 'AC' or d.patient_status = 'DR')
+
+AND d.provider_no NOT IN ('125','10000','10052','10003','10160','10233','10282') 
+
+AND affiliated = '' 
+
+order by d.last_name, d.first_name
+</query>
+</report>
